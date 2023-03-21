@@ -9,10 +9,12 @@ from   typing import *
 #  Added Explanatory comments.
 #  Provided more natural English grammar for He Tao's comments. His comments
 #   are included. New comments are marked with a preceding and following group
-#   of three # characters.
+#   of three # characters, and the original docstrings use triple single quotes
+#   rather than triple double quotes.
 #  Revised for modern Python; no longer compatible with Python 2. This version
 #   requires Python 3.8
 #  Inserted type hints.
+#  Added a __bool__ function to the Value class.
 #  Changed some string searches to exploit constants in string module rather
 #   than str functions that might be affected by locale.
 #  Changed name of any() function to any_char() to avoid conflicts with 
@@ -57,27 +59,13 @@ if sys.version_info < min_py:
 ###
 # Other standard distro imports
 ###
-import argparse
 from   collections import namedtuple
 from   collections.abc import Callable
-import contextlib
 import datetime
 from   functools import wraps
 import re
 import string
 import warnings
-
-
-###
-# From hpclib
-###
-import linuxutils
-from   urdecorators import trap
-
-###
-# imports and objects that are a part of this project
-###
-verbose = False
 
 
 ##########################################################################
@@ -143,7 +131,7 @@ class Value(namedtuple('Value', 'status index value expected')):
     '''
 
     @staticmethod
-    def success(index, actual):
+    def success(index, actual) -> Value:
         '''
         Create success value.
         '''
@@ -151,14 +139,14 @@ class Value(namedtuple('Value', 'status index value expected')):
 
 
     @staticmethod
-    def failure(index, expected):
+    def failure(index, expected) -> Value:
         '''
         Create failure value.
         '''
         return Value(False, index, None, expected)
 
 
-    def aggregate(self, other:Value=None):
+    def aggregate(self, other:Value=None) -> Value:
         '''
         collect the furthest failure from self and other.
         '''
@@ -168,14 +156,15 @@ class Value(namedtuple('Value', 'status index value expected')):
         return Value(True, other.index, self.value + other.value, None)
 
 
-    def update_index(self, index:int=None):
+    def update_index(self, index:int=None) -> Value:
         """
         Change the index, and return a new object.
         """
         return self if index is None else Value(self.status, index, self.value, self.expected)
 
+
     @staticmethod
-    def combinate(values):
+    def combinate(values) -> Value:
         '''
         TODO: rework this one.
         Aggregate multiple values into tuple
@@ -191,7 +180,15 @@ class Value(namedtuple('Value', 'status index value expected')):
         return Value(True, values[-1].index, out_values, None)
 
 
-    def __str__(self):
+    def __bool__(self) -> bool:
+        """
+        This function allows for checking the status with an "if" before
+        the Value object. Merely syntax sugar for neater code.
+        """
+        return bool(self.status)
+
+
+    def __str__(self) -> str:
         """
         To allow for well-behaved printing.
         """
@@ -470,9 +467,8 @@ class Parser:
 
     def __irshift__(self, other:Parser):
         '''Implements the `(>>=)` operator, means `bind`.'''
-        warnings.warn('Call to deprecated operator (`>>=`) as it is an in-place '
-                      'operator and often causing misleading, using (`>=`) for '
-                      'bind() instead.', category=DeprecationWarning)
+        warnings.warn("Operator >>= is deprecated. Use >= instead.",
+            category=DeprecationWarning)
         return self.bind(other)
 
     def __ge__(self, other:Parser):
@@ -493,8 +489,9 @@ class Parser:
 
 
 ###
-# SECTION 4: In this section, along with parse(), we have some of the class member
-# functions exposed to the outside for notational flexibility.
+# SECTION 4: In this section, along with parse(), we have some of 
+# the class member functions exposed to the outside primarily for 
+# notational flexibility.
 ##
 
 def parse(p:Parser, text:str, index:int=0) -> Value:
@@ -545,34 +542,45 @@ def choice(pa:Parser, pb:Parser):
 
 
 def try_choice(pa, pb):
-    '''Choice one from two parsers with backtrack, implements the operator of `(^)`.'''
+    '''
+    Choice one from two parsers with backtrack, implements the operator of `(^)`.
+    '''
     return pa.try_choice(pb)
 
 
 def skip(pa, pb):
-    '''Ends with a specified parser, and at the end parser consumed the end flag.
-    Implements the operator of `(<<)`.'''
+    '''
+    Ends with a specified parser, and at the end parser consumed the end flag.
+    Implements the operator of `(<<)`.
+    '''
     return pa.skip(pb)
 
 
 def ends_with(pa, pb):
-    '''Ends with a specified parser, and at the end parser hasn't consumed any input.
-    Implements the operator of `(<)`.'''
+    '''
+    Ends with a specified parser, and at the end parser hasn't consumed any input.
+    Implements the operator of `(<)`.
+    '''
     return pa.ends_with(pb)
 
 
 def excepts(pa, pb):
-    '''Fail `pa` though matched when the consecutive parser `pb` success for the rest text.'''
+    '''
+    Fail `pa` though matched when the consecutive parser `pb` success for the rest text.
+    '''
     return pa.excepts(pb)
 
 
 def parsecmap(p, fn):
-    '''Returns a parser that transforms the produced value of parser with `fn`.'''
+    '''
+    Returns a parser that transforms the produced value of parser with `fn`.
+    '''
     return p.parsecmap(fn)
 
 
 def parsecapp(p, other):
-    '''Returns a parser that applies the produced value of this parser to the produced
+    '''
+    Returns a parser that applies the produced value of this parser to the produced
     value of `other`.
 
     There should be an operator `(<*>)`, but that is impossible in Python.
@@ -581,17 +589,23 @@ def parsecapp(p, other):
 
 
 def result(p, res):
-    '''Return a value according to the parameter `res` when parse successfully.'''
+    '''
+    Return a value according to the parameter `res` when parse successfully.
+    '''
     return p.result(res)
 
 
 def mark(p):
-    '''Mark the line and column information of the result of the parser `p`.'''
+    '''
+    Mark the line and column information of the result of the parser `p`.
+    '''
     return p.mark()
 
 
 def desc(p, description):
-    '''Describe a parser, when it failed, print out the description text.'''
+    '''
+    Describe a parser, when it failed, print out the description text.
+    '''
     return p.desc(description)
 
 
@@ -599,7 +613,7 @@ def desc(p, description):
 # SECTION 5: The Parser Factory.
 #
 # The most powerful way to construct a parser is to use the generate decorator.
-# the `generate` creates a parser from a generator that should yield parsers.
+# `@generate` creates a parser from a generator that should yield parsers.
 # These parsers are applied successively and their results are sent back to the
 # generator using `.send()` protocol. The generator should return the result or
 # another parser, which is equivalent to applying it and returning its result.
@@ -651,7 +665,7 @@ def generate(fn:Callable) -> Parser:
 
 
 ##########################################################################
-# SECTION 6: The "repeater."
+# SECTION 6: Repeaters.
 ##########################################################################
 def times(p:Parser, min_times:int, max_times:int=0) -> list:
     '''
@@ -992,7 +1006,6 @@ def regex(exp:str, flags:int=0) -> Parser:
 # SECTION 8: Special purpose parsers.
 ##########################################################################
 
-
 def fail_with(message) -> Parser:
     """
     A trivial parser that always blows up.
@@ -1010,7 +1023,6 @@ def fix(fn:Callable) -> Parser:
        See also: https://github.com/sighingnow/parsec.py/issues/39.
     '''
     return (lambda x: x(x))(lambda y: fn(lambda *args: y(y)(*args)))
-
 
 
 def exclude(p: Parser, exclude: Parser) -> Parser:
@@ -1061,7 +1073,6 @@ def unit(p: Parser) -> Parser:
 ##########################################################################
 # SECTION 9: Parsers built atop Python language elements.
 ##########################################################################
-
 def integer() -> int:
     """
     Return a Python int, based on the commonsense def of a integer.
@@ -1174,7 +1185,7 @@ BANG    = '!'
 PERCENT = '%'
 
 ###
-# Regular expressions.
+# SECTION 12: Regular expression parsers.
 ###
 # Either "0" or something that starts with a non-zero digit, and may
 # have other digits following.
