@@ -34,7 +34,20 @@ I have added a
 - Many custom parsers are likely to include parsers for common programming
   elements (dates, IP addresses, timestamps). These are now included. 
 
+## Explanation of basic use.
 
+Along with writing rich parsers in Python, Parsec is useful for reading 
+user input and ensuring correct syntax. A top-level parser for the allowable
+input may be built from the Parsec library, and the top level parser will
+return the usefully transformed input. For example, if the top level parser
+is named `p`, then
+
+```python
+    text = input('Type in some stuff:')
+    results = p.parse(text)
+```
+
+.. will return a list of the objects retrieved from parsing `text`.
 
 ```python    
     class EndOfGenerator(builtins.StopIteration)
