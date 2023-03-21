@@ -13,6 +13,7 @@ from   typing import *
 #   rather than triple double quotes.
 #  Revised for modern Python; no longer compatible with Python 2. This version
 #   requires Python 3.8
+#  To the extent practical, alphabetized the functions.
 #  Inserted type hints.
 #  Added a __bool__ function to the Value class.
 #  Changed some string searches to exploit constants in string module rather
@@ -61,6 +62,7 @@ if sys.version_info < min_py:
 ###
 from   collections import namedtuple
 from   collections.abc import Callable
+from   collections.abc import Iterable
 import datetime
 from   functools import wraps
 import re
@@ -126,14 +128,14 @@ class ParseError(RuntimeError):
 class Value: pass
 class Value(namedtuple('Value', 'status index value expected')):
     '''
-    Represent the result of the Parser. namedtuple is a little bit of 
+    Value represents the result of the Parser. namedtuple is a little bit of 
     difficult beast, adding as much syntactic complexity as it removes.
     '''
 
     @staticmethod
     def success(index, actual) -> Value:
         '''
-        Create success value.
+        Factory to create success Value.
         '''
         return Value(True, index, actual, None)
 
@@ -141,14 +143,14 @@ class Value(namedtuple('Value', 'status index value expected')):
     @staticmethod
     def failure(index, expected) -> Value:
         '''
-        Create failure value.
+        Factory to create failure Value.
         '''
         return Value(False, index, None, expected)
 
 
     def aggregate(self, other:Value=None) -> Value:
         '''
-        collect the furthest failure from self and other.
+        Collect the furthest failure from self and other.
         '''
         if not self.status: return self
         if not other: return self
@@ -164,7 +166,7 @@ class Value(namedtuple('Value', 'status index value expected')):
 
 
     @staticmethod
-    def combinate(values) -> Value:
+    def combinate(values:Iterable) -> Value:
         '''
         TODO: rework this one.
         Aggregate multiple values into tuple
@@ -176,7 +178,7 @@ class Value(namedtuple('Value', 'status index value expected')):
                     return prev_v
             if not v.status:
                 return v
-        out_values = tuple([v.value for v in values])
+        out_values = tuple(v.value for v in values)
         return Value(True, values[-1].index, out_values, None)
 
 
@@ -248,13 +250,12 @@ class Parser:
 
     def parse_strict(self, text:str) -> Value:
         '''
-        Parse the longest possible prefix of the entire given string.
-
-        If the parser worked successfully and NONE text was rested, return the
+        Parse the longest possible prefix of the entire given string. If the 
+        parser worked successfully and NONE text was rested, return the
         result value, else raise a ParseError.
 
-        The difference between `parse` and `parse_strict` is that whether entire
-        given text must be used.
+        The difference between `parse` and `parse_strict` is that the entire
+        given text must be used for the event to be construed as a success.
         '''
 
         # Note that < is not the gt operator, but the unconsumed end
@@ -292,8 +293,7 @@ class Parser:
 
     def joint(self, *parsers):
         '''
-        (+) 
-        Joint two or more parsers into one. Return the aggregate of two results
+        (+) Joint two or more parsers into one. Return the aggregate of two results
         from this two parser.
         '''
         return joint(self, *parsers)
@@ -334,7 +334,10 @@ class Parser:
     def skip(self, other:Parser) -> Value:
         '''
         (<<) Ends with a specified parser, discarding any result from
-        the parser on the RHS.
+        the parser on the RHS. Typical uses might be discarding 
+        whitespace that follows a parsed token:
+
+        a_parser << whitespace_parser
         '''
         @Parser
         def skip_parser(text, index):
@@ -353,7 +356,7 @@ class Parser:
     def ends_with(self, other:Parser) -> Value:
         '''
         (<) Ends with a specified parser, and at the end parser hasn't consumed
-        any input.
+        any input. Typical use is with EOF, or similar.
         '''
         @Parser
         def ends_with_parser(text, index):
@@ -369,9 +372,12 @@ class Parser:
         return ends_with_parser
 
 
-    def excepts(self, other:Parser):
+    def excepts(self, other:Parser) -> Parser:
         '''
-        Fail though matched when the consecutive parser `other` success for the rest text.'''
+        (/) In other parser libraries, this is sometimes called the notFollowedBy
+        parser. In the expression p / q, p is considered to be successful only if
+        p succeeds, and q fails.
+        '''
         @Parser
         def excepts_parser(text, index):
             res = self(text, index)
@@ -494,13 +500,6 @@ class Parser:
 # notational flexibility.
 ##
 
-def parse(p:Parser, text:str, index:int=0) -> Value:
-    '''
-    Parse a string and return the result or raise a ParseError.
-    '''
-    return p.parse(text[index:])
-
-
 def bind(p, fn:Callable) -> Parser:
     '''
     Bind two parsers, implements the operator of `(>=)`.
@@ -508,11 +507,40 @@ def bind(p, fn:Callable) -> Parser:
     return p.bind(fn)
 
 
+def choice(pa:Parser, pb:Parser):
+    '''
+    Choice one from two parsers, implements the operator of `(|)`.
+    '''
+    return pa.choice(pb)
+
+
 def compose(pa:Parser, pb:Parser) -> Parser:
     '''
     Compose two parsers, implements the operator of `(>>)`, or `(>)`.
     '''
     return pa.compose(pb)
+
+
+def desc(p, description):
+    '''
+    Describe a parser, when it failed, print out the description text.
+    '''
+    return p.desc(description)
+
+
+def ends_with(pa, pb):
+    '''
+    Ends with a specified parser, and at the end parser hasn't consumed any input.
+    Implements the operator of `(<)`.
+    '''
+    return pa.ends_with(pb)
+
+
+def excepts(pa, pb):
+    '''
+    Fail `pa` though matched when the consecutive parser `pb` success for the rest text.
+    '''
+    return pa.excepts(pb)
 
 
 def joint(*parsers):
@@ -534,48 +562,18 @@ def joint(*parsers):
     return joint_parser
 
 
-def choice(pa:Parser, pb:Parser):
+def mark(p):
     '''
-    Choice one from two parsers, implements the operator of `(|)`.
+    Mark the line and column information of the result of the parser `p`.
     '''
-    return pa.choice(pb)
+    return p.mark()
 
 
-def try_choice(pa, pb):
+def parse(p:Parser, text:str, index:int=0) -> Value:
     '''
-    Choice one from two parsers with backtrack, implements the operator of `(^)`.
+    Parse a string and return the result or raise a ParseError.
     '''
-    return pa.try_choice(pb)
-
-
-def skip(pa, pb):
-    '''
-    Ends with a specified parser, and at the end parser consumed the end flag.
-    Implements the operator of `(<<)`.
-    '''
-    return pa.skip(pb)
-
-
-def ends_with(pa, pb):
-    '''
-    Ends with a specified parser, and at the end parser hasn't consumed any input.
-    Implements the operator of `(<)`.
-    '''
-    return pa.ends_with(pb)
-
-
-def excepts(pa, pb):
-    '''
-    Fail `pa` though matched when the consecutive parser `pb` success for the rest text.
-    '''
-    return pa.excepts(pb)
-
-
-def parsecmap(p, fn):
-    '''
-    Returns a parser that transforms the produced value of parser with `fn`.
-    '''
-    return p.parsecmap(fn)
+    return p.parse(text[index:])
 
 
 def parsecapp(p, other):
@@ -588,6 +586,13 @@ def parsecapp(p, other):
     return p.parsecapp(other)
 
 
+def parsecmap(p, fn):
+    '''
+    Returns a parser that transforms the produced value of parser with `fn`.
+    '''
+    return p.parsecmap(fn)
+
+
 def result(p, res):
     '''
     Return a value according to the parameter `res` when parse successfully.
@@ -595,18 +600,19 @@ def result(p, res):
     return p.result(res)
 
 
-def mark(p):
+def skip(pa, pb):
     '''
-    Mark the line and column information of the result of the parser `p`.
+    Ends with a specified parser, and at the end parser consumed the end flag.
+    Implements the operator of `(<<)`.
     '''
-    return p.mark()
+    return pa.skip(pb)
 
 
-def desc(p, description):
+def try_choice(pa, pb):
     '''
-    Describe a parser, when it failed, print out the description text.
+    Choice one from two parsers with backtrack, implements the operator of `(^)`.
     '''
-    return p.desc(description)
+    return pa.try_choice(pb)
 
 
 ##########################################################################
