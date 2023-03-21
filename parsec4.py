@@ -245,7 +245,7 @@ class Parser:
         if result.status:
             return result.value, text[result.index:]
 
-        raise ParseError(res.expected, text, res.index)
+        raise ParseError(result.expected, text, result.index)
 
 
     def parse_strict(self, text:str) -> Value:
@@ -680,9 +680,7 @@ def times(p:Parser, min_times:int, max_times:int=0) -> list:
     was collected. 
     '''
     
-    if max_times < min_times: 
-        max_times, min_times = min_times, max_times
-
+    max_times = min_times if not max_times else max_times
     @Parser
     def times_parser(text:str, index:int) -> Parser:
         
@@ -778,8 +776,7 @@ def separated(p:Parser, sep:str, min_times:int, max_times:int=0, end=None) -> li
 
     Return list of values returned by `p`.
     '''
-    if max_times < min_times: 
-        max_times, min_times = min_times, max_times
+    max_times = min_times if not max_times else max_times
 
     @Parser
     def sep_parser(text, index):
@@ -824,45 +821,45 @@ def separated(p:Parser, sep:str, min_times:int, max_times:int=0, end=None) -> li
 def sepBy(p:Parser, sep:str) -> list:
     '''`sepBy(p, sep)` parses zero or more occurrences of p, separated by `sep`.
     Returns a list of values returned by `p`.'''
-    return separated(p, sep, 0, maxt=float('inf'), end=False)
+    return separated(p, sep, 0, max_times=sys.maxsize, end=False)
 
 
 def sepBy1(p:Parser, sep:str) -> list:
     '''`sepBy1(p, sep)` parses one or more occurrences of `p`, separated by
     `sep`. Returns a list of values returned by `p`.'''
-    return separated(p, sep, 1, maxt=float('inf'), end=False)
+    return separated(p, sep, 1, max_times=sys.maxsize, end=False)
 
 
 def endBy(p:Parser, sep:str) -> list:
     '''`endBy(p, sep)` parses zero or more occurrences of `p`, separated and
     ended by `sep`. Returns a list of values returned by `p`.'''
-    return separated(p, sep, 0, maxt=float('inf'), end=True)
+    return separated(p, sep, 0, max_times=sys.maxsize, end=True)
 
 
 def endBy1(p:Parser, sep:str) -> list:
     '''`endBy1(p, sep) parses one or more occurrences of `p`, separated and
     ended by `sep`. Returns a list of values returned by `p`.'''
-    return separated(p, sep, 1, maxt=float('inf'), end=True)
+    return separated(p, sep, 1, max_times=sys.maxsize, end=True)
 
 
 def sepEndBy(p:Parser, sep:str) -> list:
     '''`sepEndBy(p, sep)` parses zero or more occurrences of `p`, separated and
     optionally ended by `sep`. Returns a list of
     values returned by `p`.'''
-    return separated(p, sep, 0, maxt=float('inf'))
+    return separated(p, sep, 0, max_times=sys.maxsize)
 
 
 def sepEndBy1(p:Parser, sep:str) -> list:
     '''`sepEndBy1(p, sep)` parses one or more occurrences of `p`, separated and
     optionally ended by `sep`. Returns a list of values returned by `p`.'''
-    return separated(p, sep, 1, maxt=float('inf'))
+    return separated(p, sep, 1, max_times=sys.maxsize)
 
 
 ##########################################################################
 # SECTION 7: Prebuilt parsers for common operations.
 ##########################################################################
 
-def any_character() -> Parser:
+def any_char() -> Parser:
     '''
     Note the change in name in this version. This function was named any(), but
     any is a Python built in.
@@ -911,6 +908,7 @@ def space() -> Parser:
     '''
     @Parser
     def space_parser(text, index=0) -> Value:
+        import string
         if index < len(text) and text[index] in string.whitespace:
             return Value.success(index + 1, text[index])
         else:
@@ -947,6 +945,7 @@ def digit() -> Parser:
     '''
     @Parser
     def digit_parser(text, index=0):
+        import string
         if index < len(text) and text[index] in string.digits:
             return Value.success(index + 1, text[index])
         else:

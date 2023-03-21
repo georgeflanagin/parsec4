@@ -9,7 +9,7 @@ __author__ = 'He Tao, sighingnow@gmail.com'
 import random
 import unittest
 
-from parsec import *
+from parsec4 import *
 
 class ParsecTest(unittest.TestCase):
     '''Test the implementation of Text.Parsec. (The final test for all apis)'''
@@ -323,7 +323,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         @Parser
         @fix
         def bracketed_expr(recur):
-            return (string("(") >> recur << string(")")) | any()
+            return (string("(") >> recur << string(")")) | any_char()
 
         self.assertEqual(bracketed_expr.parse("((x))"), 'x')
 
