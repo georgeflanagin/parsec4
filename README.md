@@ -53,14 +53,16 @@ The simplest parser of all might be to read the user's text one word
 at a time. A parser that retrieves a word could be written like this:
 
 ```python
-shred = parsec.regex(r'[a-z][A-Z][-_a-zA-Z0-9]*')
+import parsec4
+
+shred = parsec4.regex(r'[a-z][A-Z][-_a-zA-Z0-9]*')
 ```
 
 Note that `shred` is *not* the word that is retrieved. Instead, `shred`
 is a *parser* that retrieves a word based on the regular expression 
 supplied to the function `parsec.regex`.
 
-Every parser has a `parse()` function, so calling it with a piece of
+Every parser has a `parse()` function, and calling it with a piece of
 whitespace delimited text returns the first word of the text.
 
 ```python
@@ -68,8 +70,11 @@ whitespace delimited text returns the first word of the text.
 Your
 ```
 
+Of course, `shred` is not a top-level parser; it is an almost atomic
+parser that merely gets a word from a whitespace string. If whitespace
+delimited text is all you have, then something like this will do:
 
-
+#### ADD MORE DOCUMENTATION HERE.
 
 ```python    
     class EndOfGenerator(builtins.StopIteration)
