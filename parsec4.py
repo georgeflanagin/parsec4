@@ -562,7 +562,7 @@ def joint(*parsers):
     return joint_parser
 
 
-def mark(p):
+def mark(p:Parser):
     '''
     Mark the line and column information of the result of the parser `p`.
     '''
@@ -576,7 +576,7 @@ def parse(p:Parser, text:str, index:int=0) -> Value:
     return p.parse(text[index:])
 
 
-def parsecapp(p, other):
+def parsecapp(p:Parser, other:Parser) -> Parser:
     '''
     Returns a parser that applies the produced value of this parser to the produced
     value of `other`.
@@ -586,21 +586,21 @@ def parsecapp(p, other):
     return p.parsecapp(other)
 
 
-def parsecmap(p, fn):
+def parsecmap(p:Parser, fn:Callable) -> Parser:
     '''
     Returns a parser that transforms the produced value of parser with `fn`.
     '''
     return p.parsecmap(fn)
 
 
-def result(p, res):
+def result(p:Parser, res:Value) -> Value:
     '''
     Return a value according to the parameter `res` when parse successfully.
     '''
     return p.result(res)
 
 
-def skip(pa, pb):
+def skip(pa:Parser, pb:Parser) -> Parser:
     '''
     Ends with a specified parser, and at the end parser consumed the end flag.
     Implements the operator of `(<<)`.
@@ -608,7 +608,7 @@ def skip(pa, pb):
     return pa.skip(pb)
 
 
-def try_choice(pa, pb):
+def try_choice(pa:Parser, pb:Parser) -> Parser:
     '''
     Choice one from two parsers with backtrack, implements the operator of `(^)`.
     '''
@@ -634,7 +634,7 @@ def generate(fn:Callable) -> Parser:
 
     @wraps(fn)
     @Parser
-    def generated(text:str, index:int):
+    def generated(text:str, index:int) -> Value:
 
         iterator, value = fn(), None
         try:
@@ -1079,6 +1079,13 @@ def unit(p: Parser) -> Parser:
 ##########################################################################
 # SECTION 9: Parsers built atop Python language elements.
 ##########################################################################
+# A lot of nothing.
+WHITESPACE  = regex(r'\s*', re.MULTILINE)
+
+# And the most common parser of them all, written here in a form
+# that is suitable for a decorator.
+lexeme = lambda p: p << WHITESPACE
+
 def integer() -> int:
     """
     Return a Python int, based on the commonsense def of a integer.
@@ -1214,11 +1221,6 @@ TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2
 
 # US 10 digit phone number, w/ or w/o dashes and spaces embedded.
 US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
-
-# A lot of nothing.
-WHITESPACE  = regex(r'\s*', re.MULTILINE)
-
-lexeme = lambda p: p << WHITESPACE
 
 @lexeme
 @generate
