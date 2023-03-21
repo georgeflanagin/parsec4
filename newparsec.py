@@ -2,19 +2,30 @@
 import typing
 from   typing import *
 
-###########################################################################
-# This is an expansion of parsec. Changes include:
+"""
+#
+# This is an expansion of parsec 3.3 by He Tao. Changes include:
 #
 #  Added Explanatory comments.
-#  Revisions for modern Python; no longer compatible with Python 2.
+#  Provided more natural English grammar for He Tao's comments. His comments
+#   are included. New comments are marked with a preceding and following group
+#   of three # characters.
+#  Revised for modern Python; no longer compatible with Python 2. This version
+#   requires Python 3.8
 #  Inserted type hints.
-#  Changed some string searches to use constants in string module.
+#  Changed some string searches to exploit constants in string module rather
+#   than str functions that might be affected by locale.
 #  Changed name of any() function to any_char() to avoid conflicts with 
 #   Python built-in of the same name.
 #  Where practical, f-strings are used for formatting.
 #  A number of definitions of characters are provided, and they
-#   are named as standard symbols.
+#   are named as standard symbols: TAB, NL, CR, etc.
+#  Many custom parsers are likely to include parsers for common programming
+#   elements (dates, IP addresses, timestamps). These are now included. 
 #
+"""
+
+###
 # Credits
 ###
 __author__ = 'George Flanagin'
@@ -22,15 +33,15 @@ __credits__ = 'He Tao, sighingnow@gmail.com'
 __copyright__ = 'Copyright 2023'
 __version__ = 4.0
 __maintainer__ = "George Flanagin"
-__email__ = []
+__email__ = ['gflanagin@richmond.edu', 'me@georgeflanagin.com']
 __status__ = 'in progress'
 __license__ = 'MIT'
 
 ###########################################################################
 
-'''
+"""
 A universal Python parser combinator library inspired by Parsec library of Haskell.
-'''
+"""
 
 min_py = (3, 8)
 
