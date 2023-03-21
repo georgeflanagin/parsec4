@@ -44,79 +44,11 @@ I have added a
      |  a StopIteration exception when they exhaust the input; this mod gives
      |  us something useful.
      |  
-     |  Method resolution order:
-     |      EndOfGenerator
-     |      builtins.StopIteration
-     |      builtins.Exception
-     |      builtins.BaseException
-     |      builtins.object
-     |  
      |  Methods defined here:
      |  
      |  __init__(self, value)
      |      Initialize self.  See help(type(self)) for accurate signature.
      |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
-     |  
-     |  __weakref__
-     |      list of weak references to the object (if defined)
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from builtins.StopIteration:
-     |  
-     |  value
-     |      generator return value
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods inherited from builtins.Exception:
-     |  
-     |  __new__(*args, **kwargs) from builtins.type
-     |      Create and return a new object.  See help(type) for accurate signature.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Methods inherited from builtins.BaseException:
-     |  
-     |  __delattr__(self, name, /)
-     |      Implement delattr(self, name).
-     |  
-     |  __getattribute__(self, name, /)
-     |      Return getattr(self, name).
-     |  
-     |  __reduce__(...)
-     |      Helper for pickle.
-     |  
-     |  __repr__(self, /)
-     |      Return repr(self).
-     |  
-     |  __setattr__(self, name, value, /)
-     |      Implement setattr(self, name, value).
-     |  
-     |  __setstate__(...)
-     |  
-     |  __str__(self, /)
-     |      Return str(self).
-     |  
-     |  with_traceback(...)
-     |      Exception.with_traceback(tb) --
-     |      set self.__traceback__ to tb and return self.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from builtins.BaseException:
-     |  
-     |  __cause__
-     |      exception cause
-     |  
-     |  __context__
-     |      exception context
-     |  
-     |  __dict__
-     |  
-     |  __suppress_context__
-     |  
-     |  __traceback__
-     |  
-     |  args
     
     class EndOfParse(builtins.StopIteration)
      |  EndOfParse(value)
@@ -124,79 +56,10 @@ I have added a
      |  As above, but this exception can be raised when we reach end of all parsing
      |  to signal the true "end" if we want/need to distinguish between them.
      |  
-     |  Method resolution order:
-     |      EndOfParse
-     |      builtins.StopIteration
-     |      builtins.Exception
-     |      builtins.BaseException
-     |      builtins.object
-     |  
      |  Methods defined here:
      |  
      |  __init__(self, value)
      |      Initialize self.  See help(type(self)) for accurate signature.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
-     |  
-     |  __weakref__
-     |      list of weak references to the object (if defined)
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from builtins.StopIteration:
-     |  
-     |  value
-     |      generator return value
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods inherited from builtins.Exception:
-     |  
-     |  __new__(*args, **kwargs) from builtins.type
-     |      Create and return a new object.  See help(type) for accurate signature.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Methods inherited from builtins.BaseException:
-     |  
-     |  __delattr__(self, name, /)
-     |      Implement delattr(self, name).
-     |  
-     |  __getattribute__(self, name, /)
-     |      Return getattr(self, name).
-     |  
-     |  __reduce__(...)
-     |      Helper for pickle.
-     |  
-     |  __repr__(self, /)
-     |      Return repr(self).
-     |  
-     |  __setattr__(self, name, value, /)
-     |      Implement setattr(self, name, value).
-     |  
-     |  __setstate__(...)
-     |  
-     |  __str__(self, /)
-     |      Return str(self).
-     |  
-     |  with_traceback(...)
-     |      Exception.with_traceback(tb) --
-     |      set self.__traceback__ to tb and return self.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from builtins.BaseException:
-     |  
-     |  __cause__
-     |      exception cause
-     |  
-     |  __context__
-     |      exception context
-     |  
-     |  __dict__
-     |  
-     |  __suppress_context__
-     |  
-     |  __traceback__
-     |  
-     |  args
     
     class ParseError(builtins.RuntimeError)
      |  ParseError(expected: str, text: str, index: tuple)
@@ -222,65 +85,6 @@ I have added a
      |  
      |  loc(self) -> int
      |      Locate the error position in the source code text.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods defined here:
-     |  
-     |  loc_info(text: object, index: int) -> tuple
-     |      Location of `index` in source code `text`.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
-     |  
-     |  __weakref__
-     |      list of weak references to the object (if defined)
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods inherited from builtins.RuntimeError:
-     |  
-     |  __new__(*args, **kwargs) from builtins.type
-     |      Create and return a new object.  See help(type) for accurate signature.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Methods inherited from builtins.BaseException:
-     |  
-     |  __delattr__(self, name, /)
-     |      Implement delattr(self, name).
-     |  
-     |  __getattribute__(self, name, /)
-     |      Return getattr(self, name).
-     |  
-     |  __reduce__(...)
-     |      Helper for pickle.
-     |  
-     |  __repr__(self, /)
-     |      Return repr(self).
-     |  
-     |  __setattr__(self, name, value, /)
-     |      Implement setattr(self, name, value).
-     |  
-     |  __setstate__(...)
-     |  
-     |  with_traceback(...)
-     |      Exception.with_traceback(tb) --
-     |      set self.__traceback__ to tb and return self.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from builtins.BaseException:
-     |  
-     |  __cause__
-     |      exception cause
-     |  
-     |  __context__
-     |      exception context
-     |  
-     |  __dict__
-     |  
-     |  __suppress_context__
-     |  
-     |  __traceback__
-     |  
-     |  args
     
     class Parser(builtins.object)
      |  Parser(fn: collections.abc.Callable)
@@ -408,14 +212,7 @@ I have added a
      |      any input, and then parser q is tried.
      |  
      |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
-     |  
-     |  __dict__
-     |      dictionary for instance variables (if defined)
-     |  
-     |  __weakref__
-     |      list of weak references to the object (if defined)
-    
+
     class Value(Value)
      |  Value(status, index, value, expected)
      |  
@@ -457,39 +254,6 @@ I have added a
      |      Create success value.
      |  
      |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
-     |  
-     |  __dict__
-     |      dictionary for instance variables (if defined)
-     |  
-     |  ----------------------------------------------------------------------
-     |  Methods inherited from Value:
-     |  
-     |  __getnewargs__(self)
-     |      Return self as a plain tuple.  Used by copy and pickle.
-     |  
-     |  __repr__(self)
-     |      Return a nicely formatted representation string
-     |  
-     |  _asdict(self)
-     |      Return a new dict which maps field names to their values.
-     |  
-     |  _replace(self, /, **kwds)
-     |      Return a new Value object replacing specified fields with new values
-     |  
-     |  ----------------------------------------------------------------------
-     |  Class methods inherited from Value:
-     |  
-     |  _make(iterable) from builtins.type
-     |      Make a new Value object from a sequence or iterable
-     |  
-     |  ----------------------------------------------------------------------
-     |  Static methods inherited from Value:
-     |  
-     |  __new__(_cls, status, index, value, expected)
-     |      Create new instance of Value(status, index, value, expected)
-     |  
-     |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Value:
      |  
      |  status
@@ -504,69 +268,6 @@ I have added a
      |  expected
      |      Alias for field number 3
      |  
-     |  ----------------------------------------------------------------------
-     |  Data and other attributes inherited from Value:
-     |  
-     |  _field_defaults = {}
-     |  
-     |  _fields = ('status', 'index', 'value', 'expected')
-     |  
-     |  ----------------------------------------------------------------------
-     |  Methods inherited from builtins.tuple:
-     |  
-     |  __add__(self, value, /)
-     |      Return self+value.
-     |  
-     |  __contains__(self, key, /)
-     |      Return key in self.
-     |  
-     |  __eq__(self, value, /)
-     |      Return self==value.
-     |  
-     |  __ge__(self, value, /)
-     |      Return self>=value.
-     |  
-     |  __getattribute__(self, name, /)
-     |      Return getattr(self, name).
-     |  
-     |  __getitem__(self, key, /)
-     |      Return self[key].
-     |  
-     |  __gt__(self, value, /)
-     |      Return self>value.
-     |  
-     |  __hash__(self, /)
-     |      Return hash(self).
-     |  
-     |  __iter__(self, /)
-     |      Implement iter(self).
-     |  
-     |  __le__(self, value, /)
-     |      Return self<=value.
-     |  
-     |  __len__(self, /)
-     |      Return len(self).
-     |  
-     |  __lt__(self, value, /)
-     |      Return self<value.
-     |  
-     |  __mul__(self, value, /)
-     |      Return self*value.
-     |  
-     |  __ne__(self, value, /)
-     |      Return self!=value.
-     |  
-     |  __rmul__(self, value, /)
-     |      Return value*self.
-     |  
-     |  count(self, value, /)
-     |      Return number of occurrences of value.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Class methods inherited from builtins.tuple:
-     |  
-     |  __class_getitem__(...) from builtins.type
-     |      See PEP 585
 
 FUNCTIONS
 
@@ -749,308 +450,48 @@ FUNCTIONS
 
 DATA
     AT_SIGN = '@'
-    AbstractSet = typing.AbstractSet
-        A generic version of collections.abc.Set.
-    
-    Any = typing.Any
-        Special type indicating an unconstrained type.
-        
-        - Any is compatible with every type.
-        - Any assumed to have all methods.
-        - All values assumed to be instances of Any.
-        
-        Note that all the above statements are true from the point of view of
-        static type checkers. At runtime, Any should not be used with instance
-        or class checks.
-    
-    AnyStr = ~AnyStr
-    AsyncContextManager = typing.AsyncContextManager
-        A generic version of contextlib.AbstractAsyncContextManager.
-    
-    AsyncGenerator = typing.AsyncGenerator
-        A generic version of collections.abc.AsyncGenerator.
-    
-    AsyncIterable = typing.AsyncIterable
-        A generic version of collections.abc.AsyncIterable.
-    
-    AsyncIterator = typing.AsyncIterator
-        A generic version of collections.abc.AsyncIterator.
-    
-    Awaitable = typing.Awaitable
-        A generic version of collections.abc.Awaitable.
-    
     BACKSLASH = r'\'
     BANG = '!'
     BSPACE = '\x08'
-    ByteString = typing.ByteString
-        A generic version of collections.abc.ByteString.
-    
     CIRCUMFLEX = '^'
     COLON = ':'
     COMMA = ','
     CR = '\r'
-    ChainMap = typing.ChainMap
-        A generic version of collections.ChainMap.
-    
-    ClassVar = typing.ClassVar
-        Special type construct to mark class variables.
-        
-        An annotation wrapped in ClassVar indicates that a given
-        attribute is intended to be used as a class variable and
-        should not be set on instances of that class. Usage::
-        
-          class Starship:
-              stats: ClassVar[Dict[str, int]] = {} # class variable
-              damage: int = 10                     # instance variable
-        
-        ClassVar accepts only types and cannot be further subscribed.
-        
-        Note that ClassVar is not a class itself, and should not
-        be used with isinstance() or issubclass().
-    
-    Collection = typing.Collection
-        A generic version of collections.abc.Collection.
-    
-    Container = typing.Container
-        A generic version of collections.abc.Container.
-    
-    ContextManager = typing.ContextManager
-        A generic version of contextlib.AbstractContextManager.
-    
-    Coroutine = typing.Coroutine
-        A generic version of collections.abc.Coroutine.
-    
-    Counter = typing.Counter
-        A generic version of collections.Counter.
-    
     DIGIT_STR = <parsec4.Parser object>
     DOLLAR = '$'
-    DefaultDict = typing.DefaultDict
-        A generic version of collections.defaultdict.
-    
-    Deque = typing.Deque
-        A generic version of collections.deque.
-    
-    Dict = typing.Dict
-        A generic version of dict.
-    
     EMPTY_STR = ''
     EQUAL = '='
-    Final = typing.Final
-        Special typing construct to indicate final names to type checkers.
-        
-        A final name cannot be re-assigned or overridden in a subclass.
-        For example:
-        
-          MAX_SIZE: Final = 9000
-          MAX_SIZE += 1  # Error reported by type checker
-        
-          class Connection:
-              TIMEOUT: Final[int] = 10
-        
-          class FastConnector(Connection):
-              TIMEOUT = 1  # Error reported by type checker
-        
-        There is no runtime checking of these properties.
-    
-    FrozenSet = typing.FrozenSet
-        A generic version of frozenset.
-    
-    Generator = typing.Generator
-        A generic version of collections.abc.Generator.
-    
-    Hashable = typing.Hashable
-        A generic version of collections.abc.Hashable.
-    
     IEEE754 = <parsec4.Parser object>
     IPv4_ADDR = <parsec4.Parser object>
-    ItemsView = typing.ItemsView
-        A generic version of collections.abc.ItemsView.
-    
-    Iterable = typing.Iterable
-        A generic version of collections.abc.Iterable.
-    
-    Iterator = typing.Iterator
-        A generic version of collections.abc.Iterator.
-    
-    KeysView = typing.KeysView
-        A generic version of collections.abc.KeysView.
-    
     LBRACE = '{'
     LBRACK = '['
     LF = '\n'
-    List = typing.List
-        A generic version of list.
-    
-    Literal = typing.Literal
-        Special typing form to define literal types (a.k.a. value types).
-        
-        This form can be used to indicate to type checkers that the corresponding
-        variable or function parameter has a value equivalent to the provided
-        literal (or one of several literals):
-        
-          def validate_simple(data: Any) -> Literal[True]:  # always returns True
-              ...
-        
-          MODE = Literal['r', 'rb', 'w', 'wb']
-          def open_helper(file: str, mode: MODE) -> str:
-              ...
-        
-          open_helper('/some/path', 'r')  # Passes type check
-          open_helper('/other/path', 'typo')  # Error in type checker
-        
-        Literal[...] cannot be subclassed. At runtime, an arbitrary value
-        is allowed as type argument to Literal[...], but type checkers may
-        impose restrictions.
-    
     MINUS = '-'
-    Mapping = typing.Mapping
-        A generic version of collections.abc.Mapping.
-    
-    MappingView = typing.MappingView
-        A generic version of collections.abc.MappingView.
-    
-    Match = typing.Match
-        A generic version of re.Match.
-    
-    MutableMapping = typing.MutableMapping
-        A generic version of collections.abc.MutableMapping.
-    
-    MutableSequence = typing.MutableSequence
-        A generic version of collections.abc.MutableSequence.
-    
-    MutableSet = typing.MutableSet
-        A generic version of collections.abc.MutableSet.
-    
-    NoReturn = typing.NoReturn
-        Special type indicating functions that never return.
-        Example::
-        
-          from typing import NoReturn
-        
-          def stop() -> NoReturn:
-              raise Exception('no way')
-        
-        This type is invalid in other positions, e.g., ``List[NoReturn]``
-        will fail in static type checkers.
-    
     OCTOTHORPE = '#'
-    Optional = typing.Optional
-        Optional type.
-        
-        Optional[X] is equivalent to Union[X, None].
-    
-    OrderedDict = typing.OrderedDict
-        A generic version of collections.OrderedDict.
-    
     PERCENT = '%'
     PLUS = '+'
     PYINT = <parsec4.Parser object>
-    Pattern = typing.Pattern
-        A generic version of re.Pattern.
-    
     QUOTE1 = "'"
     QUOTE2 = '"'
     QUOTE3 = '`'
     RBRACE = '}'
     RBRACK = ']'
-    Reversible = typing.Reversible
-        A generic version of collections.abc.Reversible.
-    
     SEMICOLON = ';'
     SLASH = '/'
     STAR = '*'
-    Sequence = typing.Sequence
-        A generic version of collections.abc.Sequence.
-    
-    Set = typing.Set
-        A generic version of set.
-    
-    Sized = typing.Sized
-        A generic version of collections.abc.Sized.
-    
     TAB = '\t'
     TIME = <parsec4.Parser object>
     TIMESTAMP = <parsec4.Parser object>
     TYPE_CHECKING = False
-    Tuple = typing.Tuple
-        Tuple type; Tuple[X, Y] is the cross-product type of X and Y.
-        
-        Example: Tuple[T1, T2] is a tuple of two elements corresponding
-        to type variables T1 and T2.  Tuple[int, float, str] is a tuple
-        of an int, a float and a string.
-        
-        To specify a variable-length tuple of homogeneous type, use Tuple[T, ...].
-    
-    Type = typing.Type
-        A special construct usable to annotate class objects.
-        
-        For example, suppose we have the following classes::
-        
-          class User: ...  # Abstract base for User classes
-          class BasicUser(User): ...
-          class ProUser(User): ...
-          class TeamUser(User): ...
-        
-        And a function that takes a class argument that's a subclass of
-        User and returns an instance of the corresponding class::
-        
-          U = TypeVar('U', bound=User)
-          def new_user(user_class: Type[U]) -> U:
-              user = user_class()
-              # (Here we could write the user object to a database)
-              return user
-        
-          joe = new_user(BasicUser)
-        
-        At this point the type checker knows that joe has type BasicUser.
-
     UNDERSCORE = '_'
     US_PHONE = <parsec4.Parser object>
-    Union = typing.Union
-        Union type; Union[X, Y] means either X or Y.
-        
-        To define a union, use e.g. Union[int, str].  Details:
-        - The arguments must be types and there must be at least one.
-        - None as an argument is a special case and is replaced by
-          type(None).
-        - Unions of unions are flattened, e.g.::
-        
-            Union[Union[int, str], float] == Union[int, str, float]
-        
-        - Unions of a single argument vanish, e.g.::
-        
-            Union[int] == int  # The constructor actually returns int
-        
-        - Redundant arguments are skipped, e.g.::
-        
-            Union[int, str, int] == Union[int, str]
-        
-        - When comparing unions, the argument order is ignored, e.g.::
-        
-            Union[int, str] == Union[str, int]
-        
-        - You cannot subclass or instantiate a union.
-        - You can use Optional[X] as a shorthand for Union[X, None].
-    
     VTAB = '\x0c'
-    ValuesView = typing.ValuesView
-        A generic version of collections.abc.ValuesView.
-    
     WHITESPACE = <parsec4.Parser object>
-    __copyright__ = 'Copyright 2023'
-    __email__ = ['gflanagin@richmond.edu', 'me@georgeflanagin.com']
-    __license__ = 'MIT'
-    __maintainer__ = 'George Flanagin'
-    __status__ = 'in progress'
     min_py = (3, 8)
     quoted = <parsec4.Parser object>
 
 VERSION
     4.0
-
-AUTHOR
-    George Flanagin
 
 CREDITS
     He Tao, sighingnow@gmail.com
