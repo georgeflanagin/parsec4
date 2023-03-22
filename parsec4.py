@@ -17,7 +17,7 @@ from   typing import *
 #  Inserted type hints.
 #  Added a __bool__ function to the Value class.
 #  Changed some string searches to exploit constants in string module rather
-#   than str functions that might be affected by locale.
+#   than str functions that might be affected by locale.**
 #  Changed name of any() function to any_char() to avoid conflicts with 
 #   Python built-in of the same name.
 #  Where practical, f-strings are used for formatting.
@@ -25,6 +25,12 @@ from   typing import *
 #   are named as standard symbols: TAB, NL, CR, etc.
 #  Many custom parsers are likely to include parsers for common programming
 #   elements (dates, IP addresses, timestamps). These are now included. 
+#
+# ** A note on the use of the import statement. The import near the top of the 
+#    file imports string, and creates an entry in the system modules table 
+#    named 'string'. The use of the import statement inside the parser functions
+#    merely references this already imported module's index in the sys.modules
+#    table.
 #
 """
 
@@ -68,6 +74,42 @@ from   functools import wraps
 import re
 import string
 import warnings
+
+##########################################################################
+# SECTION 0: Constants
+##########################################################################
+
+TAB     = '\t'
+CR      = '\r'
+LF      = '\n'
+VTAB    = '\f'
+BSPACE  = '\b'
+QUOTE1  = "'"
+QUOTE2  = '"'
+QUOTE3  = "`"
+LBRACE  = '{'
+RBRACE  = '}'
+LBRACK  = '['
+RBRACK  = ']'
+COLON   = ':'
+COMMA   = ','
+SEMICOLON   = ';'
+BACKSLASH   = '\\'
+UNDERSCORE  = '_'
+OCTOTHORPE  = '#'
+CIRCUMFLEX  = '^'
+EMPTY_STR   = ""
+
+
+SLASH   = '/'
+PLUS    = '+'
+MINUS   = '-'
+STAR    = '*'    
+EQUAL   = '='
+DOLLAR  = '$'
+AT_SIGN = '@'
+BANG    = '!'
+PERCENT = '%'
 
 
 ##########################################################################
@@ -618,11 +660,16 @@ def try_choice(pa:Parser, pb:Parser) -> Parser:
 ##########################################################################
 # SECTION 5: The Parser Factory.
 #
-# The most powerful way to construct a parser is to use the generate decorator.
-# `@generate` creates a parser from a generator that should yield parsers.
+# The most powerful way to construct a parser is to use the @generate decorator.
+# @generate creates a parser from a generator that should yield parsers.
 # These parsers are applied successively and their results are sent back to the
 # generator using `.send()` protocol. The generator should return the result or
 # another parser, which is equivalent to applying it and returning its result.
+#
+# For an explanation of the .send() protocol, see the text in section 6.2.9.1
+# of the official Python documentation.
+# 
+#     https://docs.python.org/3/reference/expressions.html
 ##########################################################################
 
 def generate(fn:Callable) -> Parser:
@@ -689,8 +736,8 @@ def times(p:Parser, min_times:int, max_times:int=0) -> list:
             res = p(text, index)
             if res.status:
                 if max_times == sys.maxsize and res.index == index:
-                    # prevent infinite loop, see GH-43
                     break
+
                 values.append(res.value)
                 index, cnt = res.index, cnt + 1
             else:
@@ -706,8 +753,6 @@ def times(p:Parser, min_times:int, max_times:int=0) -> list:
             # We cannot put the `index < len(text)` in where because some parser can
             # success even when we have no any text. We also need to detect if the
             # parser consume no text.
-            #
-            # See: #28
             ###
             if index >= len(text):
                 if cnt >= min_times:
@@ -750,29 +795,37 @@ def optional(p:Parser, default_value=None):
 
 def many(p) -> list:
     '''
-    Repeat a parser 0 to infinity times. DO AS MUCH MATCH AS IT CAN.
-    Return a list of values.
+    Repeat a parser 0 to infinity times. Return a list of the values
+    collected. This function is just a convenience, as it calls times.
     '''
     return times(p, 0, sys.maxsize)
 
 
 def many1(p:Parser) -> list:
     '''
-    Repeat a parser 1 to infinity times. DO AS MUCH MATCH AS IT CAN.
-    Return a list of values.
+    Repeat a parser 1 to infinity times. Return a list of the values
+    collected. This function is just a convenience, as it calls times.
+    Note that it does error out if p fails to execute at least once.
     '''
     return times(p, 1, sys.maxsize)
 
-
+###
+# NOTE: the following parsers are useful for expressions in 
+# a language that appear like this: a, b, c, d
+# Most languages have these.
+###
 def separated(p:Parser, sep:str, min_times:int, max_times:int=0, end=None) -> list:
     '''
     Repeat a parser `p` separated by `s` between `min_times` and `max_times` times.
+    If max_times is omitted, max_times becomes min_times, effectively
+    executing `p` exactly min_times.
 
-    - When `end` is None, a trailing separator is optional.
+    - When `end` is None, a trailing separator is optional (default).
     - When `end` is True, a trailing separator is required.
     - When `end` is False, a trailing separator will not be parsed.
 
-    MATCHES AS MUCH AS POSSIBLE.
+    This algorithm is greedy, and does not give back; i.e., it is like the
+    splat (*) in regular expressions.
 
     Return list of values returned by `p`.
     '''
@@ -819,46 +872,57 @@ def separated(p:Parser, sep:str, min_times:int, max_times:int=0, end=None) -> li
 
 
 def sepBy(p:Parser, sep:str) -> list:
-    '''`sepBy(p, sep)` parses zero or more occurrences of p, separated by `sep`.
-    Returns a list of values returned by `p`.'''
+    '''
+    `sepBy(p, sep)` parses zero or more occurrences of p, separated by `sep`.
+    Returns a list of values returned by `p`.
+    '''
     return separated(p, sep, 0, max_times=sys.maxsize, end=False)
 
 
 def sepBy1(p:Parser, sep:str) -> list:
-    '''`sepBy1(p, sep)` parses one or more occurrences of `p`, separated by
-    `sep`. Returns a list of values returned by `p`.'''
+    '''
+    `sepBy1(p, sep)` parses one or more occurrences of `p`, separated by
+    `sep`. Returns a list of values returned by `p`.
+    '''
     return separated(p, sep, 1, max_times=sys.maxsize, end=False)
 
 
 def endBy(p:Parser, sep:str) -> list:
-    '''`endBy(p, sep)` parses zero or more occurrences of `p`, separated and
-    ended by `sep`. Returns a list of values returned by `p`.'''
+    '''
+    `endBy(p, sep)` parses zero or more occurrences of `p`, separated and
+    ended by `sep`. Returns a list of values returned by `p`.
+    '''
     return separated(p, sep, 0, max_times=sys.maxsize, end=True)
 
 
 def endBy1(p:Parser, sep:str) -> list:
-    '''`endBy1(p, sep) parses one or more occurrences of `p`, separated and
-    ended by `sep`. Returns a list of values returned by `p`.'''
+    '''
+    `endBy1(p, sep) parses one or more occurrences of `p`, separated and
+    ended by `sep`. Returns a list of values returned by `p`.
+    '''
     return separated(p, sep, 1, max_times=sys.maxsize, end=True)
 
 
 def sepEndBy(p:Parser, sep:str) -> list:
-    '''`sepEndBy(p, sep)` parses zero or more occurrences of `p`, separated and
+    '''
+    `sepEndBy(p, sep)` parses zero or more occurrences of `p`, separated and
     optionally ended by `sep`. Returns a list of
-    values returned by `p`.'''
+    values returned by `p`.
+    '''
     return separated(p, sep, 0, max_times=sys.maxsize)
 
 
 def sepEndBy1(p:Parser, sep:str) -> list:
-    '''`sepEndBy1(p, sep)` parses one or more occurrences of `p`, separated and
-    optionally ended by `sep`. Returns a list of values returned by `p`.'''
+    '''
+    `sepEndBy1(p, sep)` parses one or more occurrences of `p`, separated and
+    optionally ended by `sep`. Returns a list of values returned by `p`.
+    '''
     return separated(p, sep, 1, max_times=sys.maxsize)
 
 
 ##########################################################################
 # SECTION 7: Prebuilt parsers for common operations.
 ##########################################################################
-
 def any_char() -> Parser:
     '''
     Note the change in name in this version. This function was named any(), but
@@ -941,7 +1005,7 @@ def letter() -> Parser:
 
 def digit() -> Parser:
     '''
-    Parse a digit.
+    Parse a digit. 
     '''
     @Parser
     def digit_parser(text, index=0):
@@ -967,23 +1031,6 @@ def eof() -> Parser:
     return eof_parser
 
 
-def string(s:str):
-    '''
-    Parses a string.
-    '''
-    @Parser
-    def string_parser(text, index=0):
-        slen, tlen = len(s), len(text)
-        if ''.join(text[index:index + slen]) == s:
-            return Value.success(index + slen, s)
-        else:
-            matched = 0
-            while matched < slen and index + matched < tlen and text[index + matched] == s[matched]:
-                matched = matched + 1
-            return Value.failure(index + matched, s)
-    return string_parser
-
-
 def regex(exp:str, flags:int=0) -> Parser:
     '''
     Parses according to a regular expression.
@@ -1007,6 +1054,63 @@ def regex(exp:str, flags:int=0) -> Parser:
     return regex_parser
 
 
+###
+# SECTION 7A: Regular expression parsers.
+###
+# A lot of nothing.
+WHITESPACE  = regex(r'\s*', re.MULTILINE)
+
+# And the most common parser of them all, written here in a form
+# that is suitable for a decorator.
+lexeme = lambda p: p << WHITESPACE
+
+# Either "0" or something that starts with a non-zero digit, and may
+# have other digits following.
+DIGIT_STR   = regex(r'(0|[1-9][\d]*)')
+digit_str   = lexeme(DIGIT_STR)
+
+# HEX numbers are allowed to start with zero.
+HEX_STR     = regex(r'[0-9a-fA-F]+')
+hex_str     = lexeme(DIGIT_STR)
+
+# Spec for how a floating point number is written.
+IEEE754     = regex(r'-?(0|[1-9][\d]*)([.][\d]+)?([eE][+-]?[\d]+)?')
+ieee754     = lexeme(IEEE754)
+
+# IP address
+IPv4_ADDR   = regex(r'(?:(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?)\.){3}(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?)')
+ipv4_addr   = lexeme(IPv4_ADDR)
+
+# Something Python thinks is an integer.
+PYINT       = regex(r'[-+]?[\d]+')
+pyint       = lexeme(PYINT)
+
+# HH:MM:SS in 24 hour format.
+TIME        = regex(r'(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)')
+
+# ISO Timestamp
+TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2}')
+
+# US 10 digit phone number, w/ or w/o dashes and spaces embedded.
+US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
+
+def string(s:str):
+    '''
+    Parses a string.
+    '''
+    @Parser
+    def string_parser(text, index=0):
+        slen, tlen = len(s), len(text)
+        if ''.join(text[index:index + slen]) == s:
+            return Value.success(index + slen, s)
+        else:
+            matched = 0
+            while matched < slen and index + matched < tlen and text[index + matched] == s[matched]:
+                matched = matched + 1
+            return Value.failure(index + matched, s)
+    return string_parser
+
+
 ##########################################################################
 # SECTION 8: Special purpose parsers.
 ##########################################################################
@@ -1022,8 +1126,8 @@ def fix(fn:Callable) -> Parser:
     '''
     Allow recursive parser using the Y combinator trick.
 
-       Note that this version still yields the stack overflow problem, and will be fixed
-       in later version.
+        Note that this version still yields the stack overflow 
+        problem, and will be fixed in later version.
 
        See also: https://github.com/sighingnow/parsec.py/issues/39.
     '''
@@ -1078,13 +1182,6 @@ def unit(p: Parser) -> Parser:
 ##########################################################################
 # SECTION 9: Parsers built atop Python language elements.
 ##########################################################################
-# A lot of nothing.
-WHITESPACE  = regex(r'\s*', re.MULTILINE)
-
-# And the most common parser of them all, written here in a form
-# that is suitable for a decorator.
-lexeme = lambda p: p << WHITESPACE
-
 def integer() -> int:
     """
     Return a Python int, based on the commonsense def of a integer.
@@ -1159,67 +1256,6 @@ class EndOfParse(StopIteration):
     def __init__(self, value):
         self.value = value
 
-
-##########################################################################
-# SECTION 11: Constants and common regular expressions
-##########################################################################
-
-TAB     = '\t'
-CR      = '\r'
-LF      = '\n'
-VTAB    = '\f'
-BSPACE  = '\b'
-QUOTE1  = "'"
-QUOTE2  = '"'
-QUOTE3  = "`"
-LBRACE  = '{'
-RBRACE  = '}'
-LBRACK  = '['
-RBRACK  = ']'
-COLON   = ':'
-COMMA   = ','
-SEMICOLON   = ';'
-BACKSLASH   = '\\'
-UNDERSCORE  = '_'
-OCTOTHORPE  = '#'
-CIRCUMFLEX  = '^'
-EMPTY_STR   = ""
-
-
-SLASH   = '/'
-PLUS    = '+'
-MINUS   = '-'
-STAR    = '*'    
-EQUAL   = '='
-DOLLAR  = '$'
-AT_SIGN = '@'
-BANG    = '!'
-PERCENT = '%'
-
-###
-# SECTION 12: Regular expression parsers.
-###
-# Either "0" or something that starts with a non-zero digit, and may
-# have other digits following.
-DIGIT_STR   = regex(r'(0|[1-9][\d]*)')
-
-# Spec for how a floating point number is written.
-IEEE754     = regex(r'-?(0|[1-9][\d]*)([.][\d]+)?([eE][+-]?[\d]+)?')
-
-# IP address
-IPv4_ADDR   = regex(r'(?:(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?)\.){3}(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?)')
-
-# Something Python thinks is an integer.
-PYINT       = regex(r'[-+]?[\d]+')
-
-# HH:MM:SS in 24 hour format.
-TIME            = regex(r'(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)')
-
-# ISO Timestamp
-TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2}')
-
-# US 10 digit phone number, w/ or w/o dashes and spaces embedded.
-US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
 
 @lexeme
 @generate

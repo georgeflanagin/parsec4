@@ -36,6 +36,13 @@ I have added a
 
 ## Explanation of basic use.
 
+First, monadic parsers represent a type of construction mechanism
+rather than a type of underlying grammar. Thus a monadic parser could
+be used for either LL or LR grammars. This stackoverflow article
+explains the difference between LL and LR.
+
+https://stackoverflow.com/questions/5975741/what-is-the-difference-between-ll-and-lr-parsing
+
 Along with writing rich parsers in Python, Parsec is useful for reading 
 user input and ensuring correct syntax. A top-level parser for the allowable
 input may be built from the Parsec library, and the top level parser will
@@ -60,7 +67,7 @@ shred = parsec4.regex(r'[a-z][A-Z][-_a-zA-Z0-9]*')
 
 Note that `shred` is *not* the word that is retrieved. Instead, `shred`
 is a *parser* that retrieves a word based on the regular expression 
-supplied to the function `parsec.regex`.
+supplied to the function `parsec4.regex`.
 
 Every parser has a `parse()` function, and calling it with a piece of
 whitespace delimited text returns the first word of the text.
