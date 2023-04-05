@@ -1266,4 +1266,20 @@ def quoted() -> str:
     raise EndOfGenerator(''.join(body))
 
 
+def parser_from_strings(s:Union[str, Iterable]) -> Parser:
+    """
+    Factory for string parsers. NOTE that this function is not
+        itself a Parser.
+
+    s -- an iterable of strings, or a whitespace delimited string of text.
+    
+    returns -- a Parser that tries all the strings non-destructively, and 
+        vacuums up any trailing whitespace. The sub-parsers are tried 
+        deterministically in the order in which they appear in the argument
+        to the factory function. 
+    """
+    s = s.strip().split() if isinstance(s, str) else s
+    return eval(" | ".join([ f"lexeme(string('{_}'))" for _ in s ]))
+
+
 
