@@ -175,7 +175,7 @@ class Value(namedtuple('Value', 'status index value expected')):
     '''
 
     @staticmethod
-    def success(index, actual) -> Value:
+    def success(index:int, actual:object) -> Value:
         '''
         Factory to create success Value.
         '''
@@ -183,7 +183,7 @@ class Value(namedtuple('Value', 'status index value expected')):
 
 
     @staticmethod
-    def failure(index, expected) -> Value:
+    def failure(index:int, expected:object) -> Value:
         '''
         Factory to create failure Value.
         '''
@@ -327,13 +327,13 @@ class Parser:
         '''
 
         @Parser
-        def compose_parser(text, index):
+        def compose_parser(text:str, index:int):
             result = self(text, index)
             return result if not result.status else other(text, result.index)
         return compose_parser
 
 
-    def joint(self, *parsers):
+    def joint(self, *parsers:Iterable):
         '''
         (+) Joint two or more parsers into one. Return the aggregate of two results
         from this two parser.
@@ -351,7 +351,7 @@ class Parser:
         NOTICE: without backtrack.
         '''
         @Parser
-        def choice_parser(text, index):
+        def choice_parser(text:str, index:int):
             result = self(text, index)
             return result if result.status or result.index != index else other(text, index)
 
@@ -366,7 +366,7 @@ class Parser:
         any input, and then parser q is tried.
         '''
         @Parser
-        def try_choice_parser(text, index):
+        def try_choice_parser(text:str, index:int):
             result = self(text, index)
             return result if result.status else other(text, index)
 
@@ -382,7 +382,7 @@ class Parser:
         a_parser << whitespace_parser
         '''
         @Parser
-        def skip_parser(text, index):
+        def skip_parser(text:str, index:int):
             res = self(text, index)
             if not res.status:
                 return res
@@ -401,7 +401,7 @@ class Parser:
         any input. Typical use is with EOF, or similar.
         '''
         @Parser
-        def ends_with_parser(text, index):
+        def ends_with_parser(text:str, index:int):
             res = self(text, index)
             if not res.status:
                 return res

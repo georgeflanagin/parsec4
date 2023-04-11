@@ -2,10 +2,21 @@
 
 Parsec 4 is an update to Parsec 3.3 by He Tao.
 The changes fall into two groups, the minor updates and the
-expansions. I have also provided a sketch of how to use
+expansions, with one behavior change. I have also provided a sketch of how to use
 Parsec 4 for anyone just getting started with parsing.
 Finally, the doc strings are included at the bottom of 
 this file.
+
+## One behavioral change / bug fix?
+
+The `string` parser in Parsec 3.3 tried to match the first
+n characters of the text shred to the parser's datum. This leads
+to some unexpected behavior when there is a partial match of 
+n characters where n is less than the length of either the 
+text shred or the target.
+
+I changed the behavior to be a complete match, and added a 
+`startswith` parser that follows the original behavior.
 
 ## Minor updates to Parsec 3.3
 
