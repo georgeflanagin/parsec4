@@ -1094,20 +1094,20 @@ TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2
 # US 10 digit phone number, w/ or w/o dashes and spaces embedded.
 US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
 
-def string(s:str):
+def string(target:str):
     '''
     Parses a string.
     '''
     @Parser
-    def string_parser(text, index=0):
-        slen, tlen = len(s), len(text)
-        if ''.join(text[index:index + slen]) == s:
-            return Value.success(index + slen, s)
+    def string_parser(candidate:str, index:int=0):
+
+        # Set some convenience variables for clarity.
+        target_len, candidate_len = len(target), len(candidate)
+        print(f"{target=} {target_len=} {candidate=} {candidate_len=}")
+        if candidate == target:
+            return Value.success(index + target_len, target)
         else:
-            matched = 0
-            while matched < slen and index + matched < tlen and text[index + matched] == s[matched]:
-                matched = matched + 1
-            return Value.failure(index + matched, s)
+            return Value.failure(index, target)
     return string_parser
 
 
@@ -1266,20 +1266,42 @@ def quoted() -> str:
     raise EndOfGenerator(''.join(body))
 
 
-def parser_from_strings(s:Union[str, Iterable]) -> Parser:
+def parser_from_strings(s:Union[str, Iterable], 
+    cmap:Union[str, Callable]=None) -> Parser:
     """
     Factory for string parsers. NOTE that this function is not
-        itself a Parser.
+        itself a Parser, but returns a Parser object joined 
+        with the choice operator (|).
 
     s -- an iterable of strings, or a whitespace delimited string of text.
     
+    cmap -- an optional callable to be used as the argument to .parsecmap().
+        If called with a str, the argument is accepted without comment or 
+        checking. If it is a callable, an exception is raised if the 
+        callable is nameless or has a name that cannot be determined 
+        programmatically. 
+
+        It is worth noting that the name of a callable such as str.lower
+        is "lower" although the name of int is "int". In the first
+        case, you would want to use "str.lower". 
+
     returns -- a Parser that tries all the strings non-destructively, and 
         vacuums up any trailing whitespace. The sub-parsers are tried 
         deterministically in the order in which they appear in the argument
         to the factory function. 
     """
     s = s.strip().split() if isinstance(s, str) else s
-    return eval(" | ".join([ f"lexeme(string('{_}'))" for _ in s ]))
+    if cmap is None:
+        return eval(" | ".join([ f"lexeme(string('{_}'))" for _ in s ]))
 
+    if callable(cmap):
+        try:
+            cmap = cmap.__name__
+        except Exception as e:
+            raise Exception(f"Unable to get name of {cmap}")
+    else:
+        cmap = str(cmap)
 
+    return eval(" | ".join([ f"lexeme(string('{_}').parsecmap({cmap}))" for _ in s ]))
+        
 
