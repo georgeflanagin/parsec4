@@ -1096,19 +1096,54 @@ US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
 
 def string(target:str):
     '''
-    Parses a string.
+    Replaces the string parser in Parsec3. See notes in README, and 
+    the two functions below, stringpartial(), and startswith().
     '''
     @Parser
     def string_parser(candidate:str, index:int=0):
 
         # Set some convenience variables for clarity.
         target_len, candidate_len = len(target), len(candidate)
-        print(f"{target=} {target_len=} {candidate=} {candidate_len=}")
         if candidate == target:
             return Value.success(index + target_len, target)
         else:
             return Value.failure(index, target)
     return string_parser
+
+
+def stringpartial(target:str):
+    """
+    Replaces the string parser in Parsec3. See notes in README.
+    """
+    @Parser
+    def string_partial(candidate:str, index:int=0):
+
+        # Set some convenience variables for clarity.
+        target_len, candidate_len = len(target), len(candidate)
+        if candidate.startswith(target):
+            return Value.success(index + target_len, target)
+        else:
+            return Value.failure(index, target)
+
+    return string_partial
+
+
+
+def startswith(target:str):
+    """
+    Replaces the string parser in Parsec3. See notes in README.
+    """
+    @Parser
+    def string_startswith(candidate:str, index:int=0):
+
+        # Set some convenience variables for clarity.
+        target_len, candidate_len = len(target), len(candidate)
+        if candidate.startswith(target):
+            return Value.success(index + candidate_len, candidate)
+        else:
+            return Value.failure(index, target)
+
+    return string_startswith
 
 
 ##########################################################################
