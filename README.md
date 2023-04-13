@@ -4,8 +4,6 @@ Parsec 4 is an update to Parsec 3.3 by He Tao.
 The changes fall into two groups, the minor updates and the
 expansions, with one behavior change. I have also provided a sketch of how to use
 Parsec 4 for anyone just getting started with parsing.
-Finally, the doc strings are included at the bottom of 
-this file.
 
 ## One behavioral change / bug fix?
 
