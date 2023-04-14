@@ -81,6 +81,7 @@ import warnings
 
 TAB     = '\t'
 CR      = '\r'
+NL      = '\n'
 LF      = '\n'
 VTAB    = '\f'
 BSPACE  = '\b'
@@ -1113,60 +1114,20 @@ TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2
 US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
 
 
-###
-# Replaces the string parser in Parsec3. See notes in README, and 
-# the two functions below, string_parsec3 and string_parsec4.
-#
-# This is the legacy compatibility hack. If PARSEC3_STRING
-# is set in the environment, the string parsers will work
-# as they did before, advancing the index by the number of
-# characters matched. Otherwise, the index does not advance
-# on failure. Success in both cases is unchanged.
-###
-
-def string_parsec4(token:str):
-    """
-    returns :
-        success, advances index by len(token), token
-        failure, no change to index, token 
-    """
+def string(s):
+    '''Parses a string.'''
     @Parser
-    def string_parser(input_text, index=0):
-        if input_text.startswith(token):
-            return Value.success(index + len(token), token)
+    def string_parser(text, index=0):
+        slen, tlen = len(s), len(text)
+        expression = ''.join(text[index:index + slen]) == s
+        if ''.join(text[index:index + slen]) == s:
+            return Value.success(index + slen, s)
         else:
-            return Value.failure(index, token)
-
-    return string_parser
-
-
-def string_parsec3(token:str):
-    """
-    NOTE: this function behaves like string() in Parsec 3.3.
-
-    returns :
-        success, advances index by len(token), token
-        failure, index advanced by n matching chars [0..len(token)], token
-    """
-    @Parser
-    def string_partial(input_text:str, index:int=0):
-
-        token_len, input_text_len = len(token), len(input_text)
-        if input_text.startswith(token):
-            return Value.success(index + token_len, token)
-        else:
-
             matched = 0
-            while ( matched < token_len and
-                    index + matched < input_text_len and 
-                    text[index+matched] == token[matched] ):
-                matched+=1
-
-            return Value.failure(index+matched, token)
-
-    return string_partial
-
-string = string_parsec3 if os.getenv('PARSEC3_STRING') else string_parsec4
+            while matched < slen and index + matched < tlen and text[index + matched] == s[matched]:
+                matched = matched + 1
+            return Value.failure(index + matched, s)
+    return string_parser
 
 ##########################################################################
 # SECTION 8: Special purpose parsers.
@@ -1351,7 +1312,7 @@ def parser_from_strings(s:Union[str, Iterable],
     """
     s = s.strip().split() if isinstance(s, str) else s
     if cmap is None:
-        print(" ^ ".join([ f"lexeme(string('{_}'))" for _ in s ]))
+        # print(" | ".join([ f"lexeme(string('{_}'))" for _ in s ]))
         return eval(" ^ ".join([ f"lexeme(string('{_}'))" for _ in s ]))
 
     if callable(cmap):
