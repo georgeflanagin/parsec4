@@ -1114,7 +1114,7 @@ TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2
 US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
 
 
-def string(s):
+def string_parsec3(s):
     '''Parses a string.'''
     @Parser
     def string_parser(text, index=0):
@@ -1128,6 +1128,21 @@ def string(s):
                 matched = matched + 1
             return Value.failure(index + matched, s)
     return string_parser
+
+def string_parsec4(s):
+    '''Parses a string.'''
+    @Parser
+    def string_parser(text, index=0):
+        slen, tlen = len(s), len(text)
+        expression = ''.join(text[index:index + slen]) == s
+        if ''.join(text[index:index + slen]) == s:
+            return Value.success(index + slen, s)
+        else:
+            return Value.failure(index, s)
+
+    return string_parser
+
+string = string_parsec3 if os.environ.get('PARSEC3_STRINGS') else string_parsec4
 
 ##########################################################################
 # SECTION 8: Special purpose parsers.
