@@ -17,7 +17,7 @@ There are now two `string` parsers, one that follows Parsec 3.3
 behavior, and one that does not advance the index at all in cases
 of a partial match. Users can select the legacy version by
 setting the environment variable `PARSEC3_STRING`. No particular
-value --- just set or not set.
+value is required --- just set or not set.
 
 ## Minor updates to Parsec 3.3
 
@@ -54,11 +54,13 @@ There are two completely new functions.
     letter. 
 
 2. `parser_from_strings` is a factory method to create a sequence
-    of parsers for each word in a white space delimited string. This is
+    of parsers for each word in a white space delimited string or a sequence of
+    strings. This is
     a fairly common need in the uses I have had for Parsec. For example,
 
 ```python
 p = parser_from_strings("hello world")
+p = parser_from_strings(['hello', 'world'])
 ```
  
 produces:
@@ -66,6 +68,16 @@ produces:
 ```python
 lexeme(string("hello")) ^ lexeme(string("world"))
 ```
+
+There is an option second argument that is a callable or the name of a
+callable that is to be applied to a successful parse. For (a not particularly useful) example, 
+
+```python
+p = parser_from_strings("HELLO WORLD", 'str.lower')
+```
+
+A more useful argument is likely to be a `lambda` function that invokes a
+Python function in the code of your current project.
 
 ## Explanation of basic use.
 
