@@ -159,7 +159,7 @@ Note that `shred` is *not* the word that is retrieved. Instead, `shred`
 is a *parser* that retrieves a word based on the regular expression 
 supplied to the function `parsec4.regex`.
 
-Every parser has a `parse()` function, and calling it with a piece of
+Every parser has a `parse()` function, and calling `shred` with a piece of
 whitespace delimited text returns the first word of the text.
 
 ```python
@@ -168,8 +168,42 @@ Your
 ```
 
 Of course, `shred` is not a top-level parser; it is an almost atomic
-parser that merely gets a word from a whitespace string. If whitespace
-delimited text is all you have, then something like this will do:
+parser that merely gets a word from a whitespace string. 
+
+## How does Parsec work?
+
+Parsec is not itself a parser for *any* language; it is a parser construction
+kit based on the idea of monads. Each monad, whether it is one provided "in the can" 
+by Parsec, or something you write or create by combining Parsec's parts should do this:
+
+- Accept arguments that are a `str` that your monad examines, and an `int` that
+    represents the offset into the `str` where your parse should begin. This argument
+    defaults to zero, which makes it very convenient to write statements like 
+    `shred.parse('hello world')`
+    
+- Returns a `Value` object that is a named tuple: `(status:bool, index:int, found:object, expected:object)`
+
+Both Parsec 3 and Parsec 4 provide convenience factories for the concepts of success and failure
+of the parser. Success is `Value(True, index, found, None)` and failure is
+`Value(False, index, None, expected)`. 
+    
+Other than `found` and `expected`, what do these terms mean and what values can
+you expect?
+    
+- If the parsing operation is a success, the parser returns some partial string 
+    from the `str` that meets the criteria of the parser, and the index that is 
+    greater than or equal to where it was before the parsing operation.
+- If the parsing operation fails, it returns what it was expecting, and the index
+  is again, greater than or equal to the value when the parser began.
+  
+The parser never "rewinds" the input, but it does not always advance the index. 
+If the parser does not advance the index, there could be a few reasons:
+
+- It is performing look-ahead; it is seeing if something is present, but not operating on it.
+- There is nothing left (i.e., you have reached the end of the input).
+- It failed, and left the index unchanged. This is called "not consuming any input."
+
+
 
 #### ADD MORE DOCUMENTATION HERE.
 
