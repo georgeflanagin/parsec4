@@ -38,13 +38,58 @@ value is required --- just set or not set.
 
 ## Expansions of the original.
 
+### General additions
+
 At University of Richmond, it is common to use parsec4 for user input processing.
 I have added a 
 
 - A number of definitions of characters are provided, and they
   are named as standard symbols: `TAB`, `NL`, `CR`, etc.
 - Many custom parsers are likely to include parsers for common programming
-  elements (dates, IP addresses, timestamps). These are now included. 
+  elements (dates, IP addresses, timestamps). These are now included.
+  
+```python
+WHITESPACE  = regex(r'\s*', re.MULTILINE)
+lexeme = lambda p: p << WHITESPACE
+
+DIGIT_STR   = regex(r'(0|[1-9][\d]*)')
+digit_str   = lexeme(DIGIT_STR)
+
+HEX_STR     = regex(r'[0-9a-fA-F]+')
+hex_str     = lexeme(DIGIT_STR)
+
+IEEE754     = regex(r'-?(0|[1-9][\d]*)([.][\d]+)?([eE][+-]?[\d]+)?')
+ieee754     = lexeme(IEEE754)
+
+IPv4_ADDR   = regex(r'(?:(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?)\.){3}(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?)')
+ipv4_addr   = lexeme(IPv4_ADDR)
+
+PYINT       = regex(r'[-+]?[\d]+')
+pyint       = lexeme(PYINT)
+
+TIME        = regex(r'(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)')
+
+TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2}')
+
+US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
+```
+
+### Flow control
+
+I have included two `Exception` classes that are identical except for name.
+`EndOfGenerator` and `EndOfParse`. Each returns a `Value` object, and you
+can write a `try` block to accept either one, both, or if you don't care, then
+use:
+
+```python
+try:
+  something()
+except StopIteration as e:
+  ...
+```
+The meaning of the `Exception` is up to you.
+
+### Specific new functions for specific uses
 
 There are two completely new functions.
 
