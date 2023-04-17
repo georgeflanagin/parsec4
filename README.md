@@ -87,7 +87,10 @@ try:
 except StopIteration as e:
   ...
 ```
-The meaning of the `Exception` is up to you.
+The meaning of the exception is up to you.
+
+There is a pre-existing `ParseError` that is reserved for use by Parsec,
+and it is raised when Parsec cannot continue.
 
 ### Specific new functions for specific uses
 
@@ -202,6 +205,13 @@ If the parser does not advance the index, there could be a few reasons:
 - It is performing look-ahead; it is seeing if something is present, but not operating on it.
 - There is nothing left (i.e., you have reached the end of the input).
 - It failed, and left the index unchanged. This is called "not consuming any input."
+
+## What is the Parser part of this code?
+
+Parsec contains a class named ... `Parser`. This class has all the methods in it that support
+parsing. It also contains a method named `bind` that turns a functional operation into a 
+parser by wrapping the function in Parser functionality. This is the monadic part of Parsec,
+transforming a function into a Parser object. Huh? 
 
 
 
