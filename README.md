@@ -174,14 +174,14 @@ parser that merely gets a word from a whitespace string.
 
 Parsec is not itself a parser for *any* language; it is a parser construction
 kit based on the idea of monads. Each monad, whether it is one provided "in the can" 
-by Parsec, or something you write or create by combining Parsec's parts should do this:
+by Parsec or something you write or create by combining Parsec's parts, should do this:
 
 - Accept arguments that are a `str` that your monad examines, and an `int` that
     represents the offset into the `str` where your parse should begin. This argument
     defaults to zero, which makes it very convenient to write statements like 
     `shred.parse('hello world')`
     
-- Returns a `Value` object that is a named tuple: `(status:bool, index:int, found:object, expected:object)`
+- Returns a `Value` object (defined in `parsec.py`) that is a named tuple: `(status:bool, index:int, found:object, expected:object)`
 
 Both Parsec 3 and Parsec 4 provide convenience factories for the concepts of success and failure
 of the parser. Success is `Value(True, index, found, None)` and failure is
