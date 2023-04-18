@@ -267,7 +267,7 @@ Operation | Meaning
 |---|---|
 `f >> g` | If `f` fails, return its failure. Otherwise, ignore the successful result, and execute `g`.
 `f << g` | If `f` fails, return its failure. Otherwise, execute `g`. If `g` succeeds, return the success value of `f` and discard the success of `g`. Index is always the  index of `g`. 
-`f | g` | If `f` succeeds, return its success. If `f` failed and the index has not moved, execute `g`
+`f|g` | If `f` succeeds, return its success. If `f` failed and the index has not moved, execute `g`
 `f ^ g` | If `f` succeeds, return its success.  If `f` failed, execute `g` with the same index tried with `f`.
 
 # An example
