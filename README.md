@@ -235,6 +235,18 @@ parsers of all kinds are generally executed only once to get the result,
 unlike a computation that might be executed millions of times in a data
 analysis program.
 
+## What are the built-in parsers in Parsec?
+
+Here is an alphabetized list of the built-ins, with a description of 
+what is success and failure, and under what circumstances the parser
+advances the index ("consumes input").
+
+
+Parser | Description | Success | Failure | Index 
+|---|---|---|---|---|
+`eof` | tests for end of a string | index at or beyond the end of the string | failure otherwise | always unchanged.
+
+
 ## What are the "combinator" parts of Parsec?
 
 As a translation of the Parsec library in Haskell, and getting a breath
