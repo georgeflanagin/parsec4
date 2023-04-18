@@ -11,8 +11,6 @@ from   typing import *
 #   are included. New comments are marked with a preceding and following group
 #   of three # characters, and the original docstrings use triple single quotes
 #   rather than triple double quotes.
-#  Revised for modern Python; no longer compatible with Python 2. This version
-#   requires Python 3.8
 #  To the extent practical, alphabetized the functions.
 #  Inserted type hints.
 #  Added a __bool__ function to the Value class.
@@ -21,10 +19,16 @@ from   typing import *
 #  Changed name of any() function to any_char() to avoid conflicts with 
 #   Python built-in of the same name.
 #  Where practical, f-strings are used for formatting.
+#  Revised for modern Python; no longer compatible with Python 2. This version
+#   requires Python 3.8.
 #  A number of definitions of characters are provided, and they
 #   are named as standard symbols: TAB, NL, CR, etc.
 #  Many custom parsers are likely to include parsers for common programming
 #   elements (dates, IP addresses, timestamps). These are now included. 
+#  There are two versions of the `string` parser. The new version consumes
+#   no input on failure. The older version can be activated by defining
+#   the environment variable PARSEC3_STRING. The value is unimportant; it 
+#   only needs to be defined.
 #
 # ** A note on the use of the import statement. The import near the top of the 
 #    file imports string, and creates an entry in the system modules table 
@@ -170,24 +174,31 @@ class ParseError(RuntimeError):
 ##########################################################################
 class Value: pass
 class Value(namedtuple('Value', 'status index value expected')):
-    '''
+    """
     Value represents the result of the Parser. namedtuple is a little bit of 
     difficult beast, adding as much syntactic complexity as it removes.
-    '''
+
+    Here the types are:
+        status   -- bool
+        index    -- int
+        value    -- object
+        expected -- str
+
+    """
 
     @staticmethod
     def success(index:int, actual:object) -> Value:
-        '''
+        """
         Factory to create success Value.
-        '''
+        """
         return Value(True, index, actual, None)
 
 
     @staticmethod
     def failure(index:int, expected:object) -> Value:
-        '''
+        """
         Factory to create failure Value.
-        '''
+        """
         return Value(False, index, None, expected)
 
 
@@ -205,7 +216,10 @@ class Value(namedtuple('Value', 'status index value expected')):
         """
         Change the index, and return a new object.
         """
-        return self if index is None else Value(self.status, index, self.value, self.expected)
+        return ( self 
+            if index is None else 
+                Value(self.status, index, self.value, self.expected)
+                )
 
 
     @staticmethod
