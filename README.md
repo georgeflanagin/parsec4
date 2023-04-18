@@ -374,17 +374,28 @@ use Parsec's functions.
 
 So let's go with the idea that the input has been stripped of tailing
 whitespace, and pounded down to lower case. What else could Parsec
-offer us? Let's consider our desire to treat *exit* and *quit* as the 
-same action. Written as it is above, the Parsec code that says
+offer us? Let's consider our desire to treat *exit* and *quit* as
+the same action. Written as it is above, the Parsec code that says
+`lexeme(string('exit')) ^ lexeme(string('quit'))` has two results (i.e.,
+the text literal "exit" or the text literal "quit") when what we want
+is only one result that represents the request to exit.
+
+The reason to have only one result may not be obvious, so I will
+explain it this way: We want our parser to make the decision that the
+user is requesting to exit the program. The rest of our code
+should not care how the user provided this information to our program,
+and it would be clumsy to execute the parsing code and then check
+again to see that the user typed either *exit* or *quit* when either
+is OK. Why bother to parse the input if you still need to write the
+following?
 
 ```python
-lexeme(string('exit')) ^ lexeme(string('quit'))
+if user_command in ('quit', 'exit'): 
+    sys.exit(os.EX_OK)
 ```
 
-has two results (i.e., the text literal "exit" or the text literal "quit") 
-when what we want is only one result that represents the request to
-exit. If we are satisfied with "exit" as the representation, then 
-we can write the above expression in Parsec's language as
+If we are satisfied with "exit" as the representation, then 
+we can write our parsing expression in Parsec's language as
 
 ```python
 lexeme(string('exit')) ^ lexeme(string('quit')).result('exit')
@@ -395,6 +406,14 @@ and useful in a great many circumstances. The one shown above
 is `.result()`, a function that provides a result value for a parser
 that has succeeded. Whatever the argument to `.result()` is, that
 becomes the result of the parsing operation. 
+
+In fact, the value supplied for result can be anything you think is
+useful! If you were using a function lookup table, you might want to
+use something like
+
+```python
+(lexeme(string('exit')) ^ lexeme(string('quit'))).result(sys.exit)
+```
 
 The other widely used transformation is `.parsecmap()`. Its argument
 is a function that is applied to the successful result of the parsing.
