@@ -238,13 +238,13 @@ analysis program.
 ## What are the built-in parsers in Parsec?
 
 Here is an alphabetized list of the built-ins, with a description of 
-what is success and failure, and under what circumstances the parser
+what is success, and under what circumstances the parser
 advances the index ("consumes input").
 
 
-Parser | Description | Success | Failure | Index 
-|---|---|---|---|---|
-`eof` | tests for end of a string | index at or beyond the end of the string | failure otherwise | always unchanged.
+Parser | Description | Success |  Index 
+|---|---|---|---|
+`eof` | tests for end of a string | index at or beyond the end of the string | always unchanged.
 
 
 ## What are the "combinator" parts of Parsec?
