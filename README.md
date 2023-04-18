@@ -306,14 +306,17 @@ In this skeletal, imperative grammar, the request consists of:
 - subject -- something you want to operate on.
 - location -- a workstation or a list of workstations that you are inquiring about. 
 
-Of course, if the verb is `exit`, then the rest of those terms might
-well be irrelevant, and if `help` is the command, then there might be a topic (subject?) but location no longer makes sense. 
+Of course, if the verb is `exit`, then the rest of those terms might well
+be irrelevant, and if `help` is the command, then there might be a topic
+(subject?) but location no longer makes sense.
 
 At the highest level, we might consider that we have:
 
 ```python
 language = show_command ^ help_command ^ status_command ^ exit
 ```
+
+## The simplest case: parsing just one word.
 
 Let's start with the easiest of these to work with: exit. Just "exit"
 all by itself, or in the language of Parsec, ...
@@ -322,16 +325,17 @@ all by itself, or in the language of Parsec, ...
 exit = string('exit') < eof
 ```
 
-The above will fail if the user types "exit " followed by the return
-key, so we can use the predefined `lexeme` term that vacuums trailing
-whitespace to forgive this extra keystroke.
+The above will fail if the user types adds a space, and types "exit "
+followed by the return key. We can use the predefined `lexeme` parser
+that vacuums trailing whitespace to forgive this extra keystroke:
 
 ```python
 exit = lexeme(string('exit')) < eof
 ```
 
-It will also fail if the user types " exit". In this case, another 
-builtin comes to our rescue, and it is almost common-sense *readable*:
+Sadly, this will still fail if the user types " exit". In this case,
+another builtin comes to our rescue, and it is almost common-sense
+*readable*:
 
 ```python
 exit = WHITESPACE >> lexeme(string('exit')) < eof
@@ -352,6 +356,58 @@ and write:
 ```python
 exit = WHITESPACE >> parser_from_strings('exit EXIT quit QUIT') < eof
 ```
+
+Assuming the user is typing in the commands, or that they are being
+read from a file, perhaps via I/O redirection, it is fair to ask this
+questions: "Why not take the user's input string, `s`, and place a line
+of Python in the function that reads the input that sayd the following?"
+
+```python
+s = s.strip().lower()
+```
+
+This approach definitely works, and parsers of all types for all languages
+like well behaved data. It is also a lot simpler than running the text
+through a number of parsers. And with a nod to the efficiency police,
+it is no doubt more efficient to use Python's built-ins than it is to
+use Parsec's functions.
+
+So let's go with the idea that the input has been stripped of tailing
+whitespace, and pounded down to lower case. What else could Parsec
+offer us? Let's consider our desire to treat *exit* and *quit* as the 
+same action. Written as it is above, the Parsec code that says
+
+```python
+lexeme(string('exit')) ^ lexeme(string('quit'))
+```
+
+has two results (i.e., the text literal "exit" or the text literal "quit") 
+when what we want is only one result that represents the request to
+exit. If we are satisfied with "exit" as the representation, then 
+we can write the above expression in Parsec's language as
+
+```python
+lexeme(string('exit')) ^ lexeme(string('quit')).result('exit')
+```
+
+Parsec offers two transformation functions that are common
+and useful in a great many circumstances. The one shown above
+is `.result()`, a function that provides a result value for a parser
+that has succeeded. Whatever the argument to `.result()` is, that
+becomes the result of the parsing operation. 
+
+The other widely used transformation is `.parsecmap()`. Its argument
+is a function that is applied to the successful result of the parsing.
+Where `.result()` just provides a substitute value to be used explicity,
+`.parsecmap()` *uses* the value of the parsing, and transforms it in
+someway.
+
+The use cases for `.parsecmap()` are different, and they fall into two
+groups:
+
+- the argument is another function that is a part of the current parser, or ...
+- the argument is a native function of Python such as `math.sqrt`. 
+
 
 #### ADD MORE DOCUMENTATION HERE.
 
