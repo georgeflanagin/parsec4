@@ -285,8 +285,9 @@ allows users to ask these questions about any workstation at University
 of Richmond.
 
 We used the `cmd` module to construct the program, and we tried to make
-the query language English-like and flexible. Some workstations are
-named for well-known jazz musicians, and commands look like this:
+the query language English-like and at least a little flexible. Some
+workstations are named for well-known jazz musicians, and commands look
+like this:
 
 ```python
 show gpus on dextergordon, billieholiday
@@ -303,14 +304,14 @@ show latest kernel of billieholiday
 In this skeletal, imperative grammar, the request consists of:
 
 - verb -- one of a small number of commands.
-- subject -- something you want to operate on.
+- subject -- something you want to inquire about.
 - location -- a workstation or a list of workstations that you are inquiring about. 
 
 Of course, if the verb is `exit`, then the rest of those terms might well
 be irrelevant, and if `help` is the command, then there might be a topic
 (subject?) but location no longer makes sense.
 
-At the highest level, we might consider that we have:
+At the highest level we have:
 
 ```python
 language = show_command ^ help_command ^ status_command ^ exit
@@ -318,19 +319,56 @@ language = show_command ^ help_command ^ status_command ^ exit
 
 ## The simplest case: parsing just one word.
 
-Let's start with the easiest of these to work with: exit. Just "exit"
+Let's start with the easiest of these to work with: `exit`. Just "exit"
 all by itself, or in the language of Parsec, ...
 
 ```python
-exit = string('exit') < eof
+exit = string('exit') < eof()
 ```
 
-The above will fail if the user types adds a space, and types "exit "
-followed by the return key. We can use the predefined `lexeme` parser
-that vacuums trailing whitespace to forgive this extra keystroke:
+Before we go forward, we must have a clear understanding of the expression
+above. Since the type of the expressions on each side of the assignment
+operator (`=`) must be the same, the left-hand-side (LHS) is a *parser*,
+not something we have parsed. In fact, `exit` is a `Parsec.Parser`
+that we built by combining two other `Parsec.Parser` objects, [1]
+a parser whose successful result is finding the string "exit" and [2]
+a parser that expects to find the end of the string.
+
+The most common question I have been asked is "How does `exit` parse
+*anything*??" The answer is that it inherits the `.parse()` method
+because `string` and `eof` are constructed by the `@generate` decorator
+that wraps the operations in the `Parser` class. The `<` operator Takes
+a parser on both the LHS and RHS and returns a parser that also has a
+`.parse()` method.
+
+Now that we have a better understanding of the revolutionary syntax,
+let's see if the above is really what we want.  It will fail if the user
+types adds a space, and types "exit " followed by the return key:
 
 ```python
-exit = lexeme(string('exit')) < eof
+>>> exit = string('exit') < eof()
+>>> exit.parse('exit')
+'exit'
+>>> exit.parse('exit ')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/milesdavis/parsec4/parsec4.py", line 290, in parse
+    return self.parse_partial(text)[0]
+  File "/home/milesdavis/parsec4/parsec4.py", line 305, in parse_partial
+    raise ParseError(result.expected, text, result.index)
+parsec4.ParseError: expected: ends with EOF at <bound method ParseError.loc of ParseError('ends with EOF', 'exit ', 4)>
+```
+
+We can use the predefined `lexeme` parser that vacuums trailing whitespace
+to forgive this extra keystroke:
+
+```python
+# from parsec4.py
+lexeme = lambda p: p << WHITESPACE 
+
+>>> exit = lexeme(string('exit')) < eof()
+>>> exit.parse('exit ')
+'exit'
 ```
 
 Sadly, this will still fail if the user types " exit". In this case,
@@ -338,39 +376,39 @@ another builtin comes to our rescue, and it is almost common-sense
 *readable*:
 
 ```python
-exit = WHITESPACE >> lexeme(string('exit')) < eof
+exit = WHITESPACE >> lexeme(string('exit')) < eof()
 ```
 
-Many users might try leaving the program with *quit*, so perhaps we
-should go with:
+What else could go wrong?  Many users might try leaving the program with
+*quit*, so perhaps we should go with:
 
 ```python
-exit = WHITESPACE >> lexeme(string('exit')) ^ lexeme(string('quit')) < eof
+exit = WHITESPACE >> lexeme(string('exit')) ^ lexeme(string('quit')) < eof()
 ```
 
-There is always someone with the caps-lock engaged, knowingly or
+And there is always someone with the caps-lock engaged, knowingly or
 unknowingly, and that user will scream in all caps, *EXIT*. One choice
 in Parsec 4 is to use the parser factory method `parser_from_strings`,
 and write:
 
 ```python
-exit = WHITESPACE >> parser_from_strings('exit EXIT quit QUIT') < eof
+exit = WHITESPACE >> parser_from_strings('exit EXIT quit QUIT') < eof()
 ```
 
 Assuming the user is typing in the commands, or that they are being
 read from a file, perhaps via I/O redirection, it is fair to ask this
 questions: "Why not take the user's input string, `s`, and place a line
-of Python in the function that reads the input that sayd the following?"
+of Python in the function that reads the input that says the following?"
 
 ```python
 s = s.strip().lower()
 ```
 
 This approach definitely works, and parsers of all types for all languages
-like well behaved data. It is also a lot simpler than running the text
-through a number of parsers. And with a nod to the efficiency police,
-it is no doubt more efficient to use Python's built-ins than it is to
-use Parsec's functions.
+like well behaved data. Great idea. It is also a lot simpler than running
+the text through a number of parsers. And with a nod to the efficiency
+police, it is no doubt more efficient to use Python's built-ins than it
+is to use Parsec's functions.
 
 So let's go with the idea that the input has been stripped of tailing
 whitespace, and pounded down to lower case. What else could Parsec
@@ -380,32 +418,31 @@ the same action. Written as it is above, the Parsec code that says
 the text literal "exit" or the text literal "quit") when what we want
 is only one result that represents the request to exit.
 
-The reason to have only one result may not be obvious, so I will
-explain it this way: We want our parser to make the decision that the
-user is requesting to exit the program. The rest of our code
-should not care how the user provided this information to our program,
-and it would be clumsy to execute the parsing code and then check
-again to see that the user typed either *exit* or *quit* when either
-is OK. Why bother to parse the input if you still need to write the
-following?
+The reason to have only one result may not be obvious, so I will explain
+it this way: We want our parser to make the decision that the user is
+requesting to exit the program. The rest of our code should not care
+how the user provided this information to our program, and it would
+be clumsy to execute the parsing code and then check again to see that
+the user typed either *exit* or *quit* when either is OK. Why bother to
+parse the input if you still need to write the following?
 
 ```python
 if user_command in ('quit', 'exit'): 
     sys.exit(os.EX_OK)
 ```
 
-If we are satisfied with "exit" as the representation, then 
-we can write our parsing expression in Parsec's language as
+If we are satisfied with "exit" as the representation, then we can write
+our parsing expression in Parsec's language as
 
 ```python
 lexeme(string('exit')) ^ lexeme(string('quit')).result('exit')
 ```
 
-Parsec offers two transformation functions that are common
-and useful in a great many circumstances. The one shown above
-is `.result()`, a function that provides a result value for a parser
-that has succeeded. Whatever the argument to `.result()` is, that
-becomes the result of the parsing operation. 
+Parsec offers two transformation functions that are common and useful in a
+great many circumstances. The one shown above is `.result()`, a function
+that provides a result value for a parser that has succeeded. Whatever
+the argument to `.result()` is, that becomes the result of the parsing
+operation.
 
 In fact, the value supplied for result can be anything you think is
 useful! If you were using a function lookup table, you might want to
@@ -415,11 +452,31 @@ use something like
 (lexeme(string('exit')) ^ lexeme(string('quit'))).result(sys.exit)
 ```
 
+OK, you *could* do this. A more usual approach inside a Python program
+might be to define each of these results as a unique member of an 
+`enum.Enum` because the value of the result is unimportant --- our program
+only needs to recognize it. Opcodes are usually given names in all caps
+for historical reasons; assembly languages were developed before
+all computers even supported lower case letters, and it helps with
+recognition.
+
+```python
+(lexeme(string('exit')) ^ lexeme(string('quit'))).result(OpCode.EXIT)
+```
+
+
+The conventional term for this kind of symbolic
+result is an *opcode*, or if you are going down the route of full compilation,
+an instruction. The opcodes might be keys in a `dict`, and the values in
+this `dict` would be functions to be executed, perhaps `sys.exit` in this
+case.
+
+
 The other widely used transformation is `.parsecmap()`. Its argument
 is a function that is applied to the successful result of the parsing.
 Where `.result()` just provides a substitute value to be used explicity,
-`.parsecmap()` *uses* the value of the parsing, and transforms it in
-someway.
+`.parsecmap()` *uses* the value of the parsing, and transforms it
+in someway.
 
 The use cases for `.parsecmap()` are different, and they fall into two
 groups:
