@@ -265,10 +265,13 @@ will call one parser `f` and the other `g`.
 
 Operation | Meaning 
 |---|---|
-`f >> g` | If `f` fails, return its failure. Otherwise, ignore the successful result, and execute `g`.
+`f >> g` or `f > g` | If `f` fails, return its failure. Otherwise, ignore the successful result, and execute `g`.
 `f << g` | If `f` fails, return its failure. Otherwise, execute `g`. If `g` succeeds, return the success value of `f` and discard the success of `g`. Index is always the  index of `g`. 
-`f \| g` | If `f` succeeds, return its success. If `f` failed and the index has not moved, execute `g`
+`f < g` | If `f` fails, return its failure. Otherwise, execute `g`. If `g` succeeds, return the success value of `f` and discard the success of `g`. Use the index of `f` on success of both `f` and `g`, but the index of `g` on failure of `g`. 
+`f \| g` | If `f` succeeds, return its success. If `f` failed and the index has not moved, execute `g`. If `f` failed and the index has moved, return the moved index position.
 `f ^ g` | If `f` succeeds, return its success.  If `f` failed, execute `g` with the same index tried with `f`.
+`f + g` | If `f` succeeds, aggregate with the result of `g` as a tuple. If `f` fails, return its failure.
+`f / g` | If `f` succeeds and `g` fails, return the result of `f`. If `f` fails or `g` succeeds, then the index is unchanged. The idea is that "f is not followed by g."
 
 # An example
 
