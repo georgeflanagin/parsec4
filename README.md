@@ -302,9 +302,56 @@ show latest kernel of billieholiday
 
 In this skeletal, imperative grammar, the request consists of:
 
-- `verb` 
-- `subject`
-- `location`
+- verb -- one of a small number of commands.
+- subject -- something you want to operate on.
+- location -- a workstation or a list of workstations that you are inquiring about. 
+
+Of course, if the verb is `exit`, then the rest of those terms might
+well be irrelevant, and if `help` is the command, then there might be a topic (subject?) but location no longer makes sense. 
+
+At the highest level, we might consider that we have:
+
+```python
+language = show_command ^ help_command ^ status_command ^ exit
+```
+
+Let's start with the easiest of these to work with: exit. Just "exit"
+all by itself, or in the language of Parsec, ...
+
+```python
+exit = string('exit') < eof
+```
+
+The above will fail if the user types "exit " followed by the return
+key, so we can use the predefined `lexeme` term that vacuums trailing
+whitespace to forgive this extra keystroke.
+
+```python
+exit = lexeme(string('exit')) < eof
+```
+
+It will also fail if the user types " exit". In this case, another 
+builtin comes to our rescue, and it is almost common-sense *readable*:
+
+```python
+exit = WHITESPACE >> lexeme(string('exit')) < eof
+```
+
+Many users might try leaving the program with *quit*, so perhaps we
+should go with:
+
+```python
+exit = WHITESPACE >> lexeme(string('exit')) ^ lexeme(string('quit')) < eof
+```
+
+There is always someone with the caps-lock engaged, knowingly or
+unknowingly, and that user will scream in all caps, *EXIT*. One choice
+in Parsec 4 is to use the parser factory method `parser_from_strings`,
+and write:
+
+```python
+exit = WHITESPACE >> parser_from_strings('exit EXIT quit QUIT') < eof
+```
 
 #### ADD MORE DOCUMENTATION HERE.
 
