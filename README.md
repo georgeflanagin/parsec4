@@ -210,10 +210,46 @@ If the parser does not advance the index, there could be a few reasons:
 
 Parsec contains a class named ... `Parser`. This class has all the methods in it that support
 parsing. It also contains a method named `bind` that turns a functional operation into a 
-parser by wrapping the function in Parser functionality. This is the monadic part of Parsec,
-transforming a function into a Parser object. Huh? 
+parser by wrapping the function in Parser functionality. This is the monadic part of Parsec:
+transforming a function into a Parser object.
 
+Parsec also contains a function named `generate` that is used as a decorator in front of a 
+function that does the parsing. The `@generate` decoration creates a Russian Doll structure of wrappings around 
+the functions. While it is not "efficient" in the computational sense, parsers of all kinds
+are generally executed only once to get the result, unlike a computation that might be 
+executed millions of times in a data analysis program. 
 
+# An example
+
+At University of Richmond, we have many Linux workstations that are used in
+Academic Research Computing. To avoid continually logging in on one workstation
+after another to answer questions such as, "what kernel version is running?" or 
+"what kinds of GPUs are installed?" we have a program that conducts a nightly 
+inventory of the configurations. The results are kept in a database, and we have
+a small non-SQL program that allows users to ask these questions about any workstation
+at University of Richmond.
+
+We used the `cmd` module to construct the program, and we tried to make the query
+language English-like and flexible. Some workstations are named for well-known
+jazz musicians, and commands look like this:
+
+```python
+show gpus on dextergordon, billieholiday
+```
+
+`show` is a legitimate command to ask about things in the database, and the program 
+supports others such as `help`, `status`, `exit`, and others. Another command might
+be:
+
+```python
+show latest kernel of billieholiday
+```
+
+In this skeletal, imperative grammar, the request consists of:
+
+- `verb` 
+- `subject`
+- `location`
 
 #### ADD MORE DOCUMENTATION HERE.
 
