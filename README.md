@@ -411,19 +411,19 @@ police, it is no doubt more efficient to use Python's built-ins than it
 is to use Parsec's functions.
 
 So let's go with the idea that the input has been stripped of tailing
-whitespace, and pounded down to lower case. What else could Parsec
+whitespace and pounded down to lower case. What else could Parsec
 offer us? Let's consider our desire to treat *exit* and *quit* as
 the same action. Written as it is above, the Parsec code that says
 `lexeme(string('exit')) ^ lexeme(string('quit'))` has two results (i.e.,
 the text literal "exit" or the text literal "quit") when what we want
-is only one result that represents the request to exit.
+is exactly *one* result that represents the request to exit.
 
-The reason to have only one result may not be obvious, so I will explain
+The reason to have only one result may not be obvious, and I will explain
 it this way: We want our parser to make the decision that the user is
 requesting to exit the program. The rest of our code should not care
-how the user provided this information to our program, and it would
+how the user provided this information to our program. It would
 be clumsy to execute the parsing code and then check again to see that
-the user typed either *exit* or *quit* when either is OK. Why bother to
+the user typed either *exit* or *quit* when either is satisfactory. Why bother to
 parse the input if you still need to write the following?
 
 ```python
@@ -455,7 +455,7 @@ use something like
 OK, you *could* do this. A more usual approach inside a Python program
 might be to define each of these results as a unique member of an 
 `enum.Enum` because the value of the result is unimportant --- our program
-only needs to recognize it. Opcodes are usually given names in all caps
+only needs to recognize it. They are usually given names in all caps
 for historical reasons; assembly languages were developed before
 all computers even supported lower case letters, and it helps with
 recognition.
@@ -467,7 +467,7 @@ recognition.
 
 The conventional term for this kind of symbolic
 result is an *opcode*, or if you are going down the route of full compilation,
-an instruction. The opcodes might be keys in a `dict`, and the values in
+an instruction for the processor. The opcodes might be keys in a `dict`, and the values in
 this `dict` would be functions to be executed, perhaps `sys.exit` in this
 case.
 
