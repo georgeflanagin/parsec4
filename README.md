@@ -246,7 +246,6 @@ Parser | Description | Success |  Returns | Index
 |---|---|---|---|---|
 `eof` | tests for end of a string | index at or beyond the end of the string | boolean | always unchanged.
 `regex` | regular expression match of a string | matches the regex | first matched string | moved ahead by length of expression; unchanged on failure
-`digit`, `letter`, `space`, etc. | finds one of ... | found the character in the next position | advaces by one on success, unchanged on failure
 
 ## What are the "combinator" parts of Parsec?
 
@@ -260,7 +259,16 @@ done with overloaded operators. There are constraints:
 - The order of operations can be controlled with parentheses, just like in Python.
 
 The uniary operations are not of much use when "combining" elements,
-so it is no surprise that the binary operators are the ones used. 
+so it is no surprise that the binary operators are the ones used. Let's 
+use letters familiar to those of us with a little math background, and we
+will call one parser `f` and the other `g`. 
+
+Operation | Meaning 
+|---|---|
+`f >> g` | If `f` fails, return its failure. Otherwise, ignore the successful result, and execute `g`.
+`f << g` | If `f` fails, return its failure. Otherwise, execute `g`. If `g` succeeds, return the success value of `f` and discard the success of `g`. Index is always the  index of `g`. 
+`f | g` | If `f` succeeds, return its success. If `f` failed and the index has not moved, execute `g`
+`f ^ g` | If `f` succeeds, return its success.  If `f` failed, execute `g` with the same index tried with `f`.
 
 # An example
 
