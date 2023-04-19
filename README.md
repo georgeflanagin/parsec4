@@ -25,8 +25,7 @@ or not set.
   are included. New comments are marked with a preceding and following group
   of three # characters, and the original docstrings use triple single quotes
   rather than triple double quotes.
-- Revised for modern Python; no longer compatible with Python 2. This version
-- Require Python 3.8
+- Revised for modern Python; no longer compatible with Python 2. This version requires Python 3.8
 - Inserted type hints.
 - Added a `__bool__` function to the Value class.
 - Changed some string searches to exploit constants in string module rather
