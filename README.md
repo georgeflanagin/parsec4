@@ -47,7 +47,7 @@ with Parsec 3.3 will also work with Parsec 4.
 ### General additions
 
 At University of Richmond, it is common to use parsec4 for user input processing.
-I have added a 
+I have added
 
 - A number of definitions of characters are provided, and they
   are named as standard symbols: `TAB`, `NL`, `CR`, etc.
@@ -83,7 +83,8 @@ US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
 ### Flow control
 
 I have included two `Exception` classes that are identical except
-for name.  `EndOfGenerator` and `EndOfParse`. Each returns a `Value`
+for name:  `EndOfGenerator` and `EndOfParse`. Each is derived from
+`StopIteration`. Each returns a `Value`
 object, and you can write a `try` block to accept either one, both,
 or if you don't care, then use:
 
