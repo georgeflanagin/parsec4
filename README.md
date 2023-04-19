@@ -162,7 +162,7 @@ a time. A parser that retrieves a word could be written like this:
 ```python
 import parsec4
 
-shred = parsec4.regex(r'[a-z][A-Z][-_a-zA-Z0-9]*')
+shred = parsec4.regex(r'[a-zA-Z]+')
 ```
 
 Note that `shred` is *not* the word that is retrieved. Instead, `shred`
