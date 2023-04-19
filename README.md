@@ -496,7 +496,7 @@ use something like
 (lexeme(string('exit')) ^ lexeme(string('quit'))).result(sys.exit)
 ```
 
-OK, you *could* do this. A more usual approach inside a Python program
+OK, you *could* do this. A more usual approach inside a Python parsing program
 might be to define each of these results as a unique member of an 
 `enum.Enum` because the value of the result is unimportant --- our program
 only needs to recognize it. They are usually given names in all caps
@@ -507,6 +507,7 @@ recognition.
 ```python
 (lexeme(string('exit')) ^ lexeme(string('quit'))).result(OpCode.EXIT)
 ```
+
 
 
 The conventional term for this kind of symbolic
@@ -535,7 +536,7 @@ it this way:
 square_roots = lexeme(string('sqrt')) >> lexeme(ieee754).parsecmap(math.sqrt)
 ```
 
-The first part recognizes the word *"sqrt"*. We only advance in the
+The first part recognizes the word *sqrt*. We only advance in the
 `square_roots` parser if we find the text "sqrt". `lexeme` vacuums up
 trailing whitespace, and then `ieee754` looks for a number. If it finds
 one, it invokes `math.sqrt` on the number. It will blowup if the IEEE 
