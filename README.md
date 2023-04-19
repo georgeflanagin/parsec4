@@ -245,7 +245,25 @@ few reasons:
 - There is nothing left (i.e., you have reached the end of the input).
 - It failed, and left the index unchanged. This is called "not consuming any input."
 
-## What is the Parser part of this code?
+### How about a few more details?
+
+Let's revisit the `shred` parser.
+
+```python
+>>> shred.parse('Your name')
+Your
+```
+
+In this example, *"Your name"* is the text. It is nine characters, and
+the index corresponds to the positions used by Python's slicing operator.
+Conceptually, `shred` applies the regex, and extracts "Your". The index is 
+now set to 4, and the remaining string is *" name"* (note the leading space).
+
+Assuming that `shred` is a component of some other parser, the 
+other parser will send `s[4:]` to the next parser to
+invoke according to its rules. 
+
+### What is the Parser part of this code?
 
 Parsec contains a class named ... `Parser`. This class has all the
 methods in it that support parsing. It also contains a method named
@@ -509,6 +527,23 @@ groups:
 
 - the argument is another function that is a part of the current parser, or ...
 - the argument is a native function of Python such as `math.sqrt`. 
+
+Let's say you wanted to parse a sentence like "sqrt 3". You might go about
+it this way:
+
+```python
+square_roots = lexeme(string('sqrt')) >> lexeme(ieee754).parsecmap(math.sqrt)
+```
+
+The first part recognizes the word *"sqrt"*. We only advance in the
+`square_roots` parser if we find the text "sqrt". `lexeme` vacuums up
+trailing whitespace, and then `ieee754` looks for a number. If it finds
+one, it invokes `math.sqrt` on the number. It will blowup if the IEEE 
+number is negative, a problem that can be dealt with in a number of ways --- 
+perhaps using `cmath.sqrt` as the function.
+
+A key point is that we can discard the *sqrt* text because we only care
+about the **fact** that it was found. We need do nothing else with it.
 
 ## Let's parse a little more ....
 
