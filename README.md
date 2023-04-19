@@ -180,10 +180,35 @@ Your
 Of course, `shred` is not a top-level parser; it is an almost atomic
 parser that merely gets a word from a whitespace string.
 
-## How does Parsec work?
+## Tutorial
+
+### How does *any* parser work?
+
+A parser crawls along a string from the beginning to the end if all
+goes well, and stopping when it has an unrecoverable error if there
+are problems.  The string is often called the *text*. At some level
+deep enough inside the parser, it reads the text one byte at a time.
+I mention this because while a parser may be aware of the lines in a
+file containing the text, it does not proceed a line at a time like the
+Python function `f.readlines()`.
+
+As it proceeds, when it finds one or more consecutive bytes that it
+both recognizes and expects that block of bytes is called a lexeme. A
+lexeme is the smallest unit of whatever language is being parsed other
+than the character.
+
+The current position in the text is called the index. As lexemes are
+identified the index advances. In parsers like Parsec, the current
+position is referred to as index zero. In other kinds of parsers, the
+absolute position might be used.
+
+### How does Parsec work?
 
 Parsec is not itself a parser for *any* language; it is a parser
-construction kit based on the idea of monads. Each monad, whether it is
+construction kit based on the idea of monads. An informal definition 
+of a monad is that it is a function, generally a short function, that 
+transforms its input in some way, returning the transformed object. 
+Each monad, whether it is
 one provided "in the can" by Parsec or something you write or create by
 combining Parsec's parts, should do this:
 
@@ -235,17 +260,17 @@ parsers of all kinds are generally executed only once to get the result,
 unlike a computation that might be executed millions of times in a data
 analysis program.
 
-## What are the built-in parsers in Parsec?
+### What are some built-in parsers in Parsec?
 
-Here is an alphabetized list of the built-ins, with a description of 
-what is success, what it returns, and under what circumstances the parser
-advances the index ("consumes input").
+Here is an alphabetized list of the most useful built-ins, with
+a description of what is success, what it returns, and under what
+circumstances the parser advances the index ("consumes input").
 
 
 Parser | Description | Success |  Returns | Index 
 |---|---|---|---|---|
 `eof` | tests for end of a string | index at or beyond the end of the string | boolean | always unchanged.
-`regex` | regular expression match of a string | matches the regex | first matched string | moved ahead by length of expression; unchanged on failure
+`regex` | regular expression match of a string | matches the regex | first matched string | moved ahead by length of the matched string; unchanged on failure
 
 ## What are the "combinator" parts of Parsec?
 
@@ -343,7 +368,7 @@ a parser on both the LHS and RHS and returns a parser that also has a
 
 Now that we have a better understanding of the revolutionary syntax,
 let's see if the above is really what we want.  It will fail if the user
-types adds a space, and types "exit " followed by the return key:
+adds a space, and types "exit " followed by the return key:
 
 ```python
 >>> exit = string('exit') < eof()
@@ -483,6 +508,8 @@ groups:
 
 - the argument is another function that is a part of the current parser, or ...
 - the argument is a native function of Python such as `math.sqrt`. 
+
+## Let's parse a little more ....
 
 
 #### ADD MORE DOCUMENTATION HERE.
