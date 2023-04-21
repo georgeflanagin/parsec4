@@ -16,13 +16,19 @@ There are now two `string` parsers, one that follows Parsec 3.3 behavior,
 and one that does not advance the index at all in cases of a partial
 match. Users can select the legacy version by setting the environment
 variable `PARSEC3_STRING`. No particular value is required --- just set
-or not set.
+or not set, so 
+
+```bash
+export PARSEC3_STRING=
+``
+
+will do it.
 
 ## Minor updates to Parsec 3.3
 
 - Added Explanatory comments.
 - Provided more natural English grammar for He Tao's comments. His comments
-  are included. New comments are marked with a preceding and following group
+  are often included *in situ*, with additional comments by me. New comments are marked with a preceding and following group
   of three # characters, and the original docstrings use triple single quotes
   rather than triple double quotes.
 - Revised for modern Python; no longer compatible with Python 2. This version requires Python 3.8
