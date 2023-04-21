@@ -56,7 +56,7 @@ existing code that works with Parsec 3.3 will also work with Parsec 4.
 
 ## Expansions of the original.
 
-### General additions
+### Application specific parsers
 
 At University of Richmond, it is common to use parsec4 for user input
 processing.  I have added:
@@ -156,7 +156,7 @@ p = parser_from_strings("HELLO WORLD", 'str.lower')
 A more useful argument is likely to be a `lambda` function that invokes
 a Python function in the code of your current project.
 
-## Explanation of basic use.
+## Explanation of use.
 
 First, monadic parsers represent a type of construction mechanism rather
 than a type of underlying grammar. Thus a monadic parser could be used
@@ -202,18 +202,7 @@ parser that merely gets the first word from a whitespace string.
 
 ## Tutorial
 
-### How does *any* parser work?
-
-A parser crawls along a string from the beginning to the end if all
-goes well, and stopping when it has an unrecoverable error if there
-are problems.  The string is often called the *text*. At some level
-deep enough inside the parser, it reads the text one byte at a time.
-I mention this because while a parser may be aware of the lines in a
-file containing the text, it does not proceed a line at a time like
-the Python function `f.readlines()`. To treat the lines as significant,
-you must parse the characters that represent the end-of-line.
-
-#### Terminology.
+### Terminology.
 
 As it proceeds, when the parser finds one or more consecutive bytes that it
 both recognizes and expects that block of bytes is called a **lexeme**. A
@@ -233,6 +222,17 @@ The current position in the text is called the index. As lexemes are
 identified the index advances. In parsers like Parsec, the current
 position is referred to as index zero. In other kinds of parsers, the
 absolute position might be used.
+
+### How does *any* parser work?
+
+A parser crawls along a string from the beginning to the end if all
+goes well, and stopping when it has an unrecoverable error if there
+are problems.  The string is often called the *text*. At some level
+deep enough inside the parser, it reads the text one byte at a time.
+I mention this because while a parser may be aware of the lines in a
+file containing the text, it does not proceed a line at a time like
+the Python function `f.readlines()`. To treat the lines as significant,
+you must parse the characters that represent the end-of-line.
 
 ### How does Parsec work?
 
@@ -310,7 +310,7 @@ parsers of all kinds are generally executed only once to get the result,
 unlike a computation that might be executed millions of times in a data
 analysis program.
 
-### What are some built-in parsers in Parsec?
+### What are some common built-in parsers in Parsec?
 
 Here is an alphabetized list of the most useful built-ins, with
 a description of what is success, what it returns, and under what
@@ -348,7 +348,7 @@ Operation | Meaning
 `f + g` | If `f` succeeds, aggregate with the result of `g` as a tuple. If `f` fails, return its failure.
 `f / g` | If `f` succeeds and `g` fails, return the result of `f`. If `f` fails or `g` succeeds, then the index is unchanged. The idea is that "f is not followed by g."
 
-# An example
+## An example
 
 At University of Richmond, we have many Linux workstations that are
 used in Academic Research Computing. To avoid continually logging in on
