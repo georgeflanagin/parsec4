@@ -20,7 +20,7 @@ or not set, so
 
 ```bash
 export PARSEC3_STRING=
-``
+```
 
 will do it.
 
