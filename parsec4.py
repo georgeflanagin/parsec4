@@ -1095,7 +1095,7 @@ WHITESPACE  = regex(r'\s*', re.MULTILINE)
 
 # And the most common parser of them all, written here in a form
 # that is suitable for a decorator.
-lexeme = lambda p: p << WHITESPACE
+lexeme      = lambda p: p << WHITESPACE
 
 # Either "0" or something that starts with a non-zero digit, and may
 # have other digits following.
@@ -1104,7 +1104,7 @@ digit_str   = lexeme(DIGIT_STR)
 
 # HEX numbers are allowed to start with zero.
 HEX_STR     = regex(r'[0-9a-fA-F]+')
-hex_str     = lexeme(DIGIT_STR)
+hex_str     = lexeme(HEX_STR)
 
 # Spec for how a floating point number is written.
 IEEE754     = regex(r'-?(0|[1-9][\d]*)([.][\d]+)?([eE][+-]?[\d]+)?')
@@ -1120,14 +1120,21 @@ pyint       = lexeme(PYINT)
 
 # HH:MM:SS in 24 hour format.
 TIME        = regex(r'(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)')
+time        = lexeme(TIME)
 
 # ISO Timestamp
 TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2}')
+timestamp   = lexeme(TIMESTAMP)
 
 # US 10 digit phone number, w/ or w/o dashes and spaces embedded.
 US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
+us_phone    = lexeme(US_PHONE)
 
-
+###
+# This is He Tao's original string parser. If the first n-characters of
+# of the text matches and n < len(text), it advances the index by n *and*
+# it returns a Value.failure. 
+###
 def string_parsec3(s):
     '''Parses a string.'''
     @Parser
@@ -1143,6 +1150,12 @@ def string_parsec3(s):
             return Value.failure(index + matched, s)
     return string_parser
 
+
+###
+# This is my minor change to He Tao's code. If the first n-characters of
+# the text matches and n < len(text), the index is unchanged in the
+# Value.failure object that is returned.
+###
 def string_parsec4(s):
     '''Parses a string.'''
     @Parser
@@ -1156,7 +1169,11 @@ def string_parsec4(s):
 
     return string_parser
 
-string = string_parsec3 if os.environ.get('PARSEC3_STRINGS') else string_parsec4
+###
+# string is assigned to one or the other based on the environment
+# variable, PARSEC3_STRING
+###
+string = string_parsec3 if os.environ.get('PARSEC3_STRING') == 1 else string_parsec4
 
 ##########################################################################
 # SECTION 8: Special purpose parsers.

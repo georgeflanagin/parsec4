@@ -5,7 +5,9 @@ two groups, the minor updates and the expansions, with one behavior
 change. I have also provided a sketch of how to use Parsec 4 for anyone
 just getting started with parsing.
 
-## One behavioral change / bug fix?
+## Two behavioral changes.
+
+### Selectable string parsing
 
 The `string` parser in Parsec 3.3 tried to match the first n characters
 of the text shred to the parser's datum. This leads to some unexpected
@@ -15,59 +17,66 @@ than the length of either the text shred or the target.
 There are now two `string` parsers, one that follows Parsec 3.3 behavior,
 and one that does not advance the index at all in cases of a partial
 match. Users can select the legacy version by setting the environment
-variable `PARSEC3_STRING`. No particular value is required --- just set
-or not set, so 
+variable `PARSEC3_STRING=1`.
 
-```bash
-export PARSEC3_STRING=
-```
+### Renamed the "any" parser
 
-will do it.
+I changed name of the `any()` parser to `any_char()` to avoid conflicts with
+Python built-in of the same name. 
 
-## Minor updates to Parsec 3.3
+## Updates to Parsec 3.3
 
-- Added Explanatory comments.
+- Added Explanatory comments to help programmers who are less familiar
+  with the concepts of parsing.
+
 - Provided more natural English grammar for He Tao's comments. His comments
-  are often included *in situ*, with additional comments by me. New comments are marked with a preceding and following group
+  are often included *in situ*, with additional comments by me. New comments 
+  are marked with a preceding and following group
   of three # characters, and the original docstrings use triple single quotes
   rather than triple double quotes.
-- Revised for modern Python; no longer compatible with Python 2. This version requires Python 3.8
+
+- Revised for modern Python; no longer compatible with Python 2. This version 
+  requires Python 3.8
+
 - Inserted type hints.
+
 - Added a `__bool__` function to the Value class.
+
 - Changed some string searches to exploit constants in string module rather
   than str functions that might be affected by locale.
-- Changed name of `any()` function to `any_char()` to avoid conflicts with 
-  Python built-in of the same name.
+
 - Where practical, f-strings are used for formatting.
+
 - An explicit `Value.__str__` is now provided so that the `Value` objects
   are more aesthetically pleasing when printed.
 
-**NOTE:** There are a number of vestigal functions for which I have run across
-no reason to use. Examples are `Value.aggregate` and `Value.update_index`. 
-These functions have been left *in situ* so that existing code that works
-with Parsec 3.3 will also work with Parsec 4.
+**NOTE:** There are a number of vestigal functions for which I have run
+across no reason to use.  These functions have been left *in situ* so that
+existing code that works with Parsec 3.3 will also work with Parsec 4.
 
 ## Expansions of the original.
 
 ### General additions
 
-At University of Richmond, it is common to use parsec4 for user input processing.
-I have added
+At University of Richmond, it is common to use parsec4 for user input
+processing.  I have added:
 
-- A number of definitions of characters are provided, and they
-  are named as standard symbols: `TAB`, `NL`, `CR`, etc.
+- Symbolic names for characters commonly involved in parsing.
+  They are named with standard symbols: `TAB`, `NL`, `CR`, etc.
 - Many custom parsers are likely to include parsers for common programming
-  elements (dates, IP addresses, timestamps). These are now included.
-  
+  elements (dates, IP addresses, timestamps). These are now included. Note
+  the pattern that the core `regex` parsers are in uppercase, and the 
+  corresponding `lexeme` parser is in lower case. 
+
 ```python
 WHITESPACE  = regex(r'\s*', re.MULTILINE)
-lexeme = lambda p: p << WHITESPACE
+lexeme      = lambda p: p << WHITESPACE
 
 DIGIT_STR   = regex(r'(0|[1-9][\d]*)')
 digit_str   = lexeme(DIGIT_STR)
 
 HEX_STR     = regex(r'[0-9a-fA-F]+')
-hex_str     = lexeme(DIGIT_STR)
+hex_str     = lexeme(HEX_STR)
 
 IEEE754     = regex(r'-?(0|[1-9][\d]*)([.][\d]+)?([eE][+-]?[\d]+)?')
 ieee754     = lexeme(IEEE754)
@@ -79,19 +88,28 @@ PYINT       = regex(r'[-+]?[\d]+')
 pyint       = lexeme(PYINT)
 
 TIME        = regex(r'(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)')
+time        = lexeme(TIME)
 
 TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2}')
+timestamp   = lexeme(TIMESTAMP)
 
 US_PHONE    = regex(r'[2-9][\d]{2}[ -]?[\d]{3}[ -]?[\d]{4}')
+us_phone    = lexeme(US_PHONE)
 ```
 
 ### Flow control
 
+#### Errors
+
+There is a pre-existing `ParseError` that is reserved for use by Parsec,
+and it is raised when Parsec cannot continue.
+
+#### Exceptions used for communication
+
 I have included two `Exception` classes that are identical except
 for name:  `EndOfGenerator` and `EndOfParse`. Each is derived from
-`StopIteration`. Each returns a `Value`
-object, and you can write a `try` block to accept either one, both,
-or if you don't care, then use:
+`StopIteration`. Each returns a `Value` object, and you can write 
+a `try` block to accept either one, both, or if you don't care, then use:
 
 ```python
 try:
@@ -99,24 +117,22 @@ try:
 except StopIteration as e:
   ...
 ```
-The meaning of the exception is up to you.
 
-There is a pre-existing `ParseError` that is reserved for use by Parsec,
-and it is raised when Parsec cannot continue.
+The meaning of the exception is up to you.
 
 ### Specific new functions for specific uses
 
 There are two completely new functions.
 
 1. `ascii_letter` has been added to restrict the definition of the a 
-    letter to `[a-z][A-Z]`. Parsec 3.3 has a `letter` parser that succeeds
+    letter to `[a-zA-Z]`. Parsec 3.3 has a `letter` parser that succeeds
     if the character is anything the Unicode standard recognizes as a 
     letter. 
 
 2. `parser_from_strings` is a factory method to create a sequence
-    of parsers for each word in a white space delimited string or a sequence of
-    strings. This is
-    a fairly common need in the uses I have had for Parsec. For example,
+    of parsers for each word in a white space delimited string or a 
+    sequence of strings. This is a fairly common need in the uses I 
+    have had for Parsec. For example,
 
 ```python
 p = parser_from_strings("hello world")
@@ -126,7 +142,7 @@ p = parser_from_strings(['hello', 'world'])
 produces:
 
 ```python
-lexeme(string("hello")) ^ lexeme(string("world"))
+p = lexeme(string("hello")) ^ lexeme(string("world"))
 ```
 
 There is an option second argument that is a callable or the name of
@@ -149,21 +165,20 @@ difference between LL and LR.
 
 https://stackoverflow.com/questions/5975741/what-is-the-difference-between-ll-and-lr-parsing
 
-Along with writing rich parsers in Python, Parsec is useful for reading 
-user input and ensuring correct syntax. A top-level parser for the allowable
-input may be built from the Parsec library, and the top level parser will
-return the usefully transformed input. For example, if the top level parser
-is named `p`, then
+Along with writing rich parsers in Python, Parsec is useful for reading
+user input and ensuring correct syntax. A top-level parser for the
+allowable input may be built from the Parsec library, and the top level
+parser will return the usefully transformed input. For example, if the
+top level parser is named `p`, then
 
 ```python
 text = input('Type in some stuff:')
 results = p.parse(text)
 ```
 
-.. will return a list of the objects retrieved from parsing `text`.
-
-The simplest parser of all might be to read the user's text one word at
-a time. A parser that retrieves a word could be written like this:
+.. should return the objects retrieved from parsing `text`.  The simplest
+parser of all might be to read the user's text one word at a time. A
+parser that retrieves a word could be written like this:
 
 ```python
 import parsec4
@@ -173,10 +188,9 @@ shred = parsec4.regex(r'[a-zA-Z]+')
 
 Note that `shred` is *not* the word that is retrieved. Instead, `shred`
 is a *parser* that retrieves a word based on the regular expression
-supplied to the function `parsec4.regex`.
-
-Every parser has a `parse()` function, and calling `shred` with a piece
-of whitespace delimited text returns the first word of the text.
+supplied to the function `parsec4.regex`.  Every parser has a `parse()`
+function, and calling `shred` with a piece of whitespace delimited text
+returns the first word of the text.
 
 ```python
 >>> shred.parse('Your name')
@@ -184,7 +198,7 @@ Your
 ```
 
 Of course, `shred` is not a top-level parser; it is an almost atomic
-parser that merely gets a word from a whitespace string.
+parser that merely gets the first word from a whitespace string.
 
 ## Tutorial
 
@@ -195,13 +209,25 @@ goes well, and stopping when it has an unrecoverable error if there
 are problems.  The string is often called the *text*. At some level
 deep enough inside the parser, it reads the text one byte at a time.
 I mention this because while a parser may be aware of the lines in a
-file containing the text, it does not proceed a line at a time like the
-Python function `f.readlines()`.
+file containing the text, it does not proceed a line at a time like
+the Python function `f.readlines()`. To treat the lines as significant,
+you must parse the characters that represent the end-of-line.
 
-As it proceeds, when it finds one or more consecutive bytes that it
-both recognizes and expects that block of bytes is called a lexeme. A
+#### Terminology.
+
+As it proceeds, when the parser finds one or more consecutive bytes that it
+both recognizes and expects that block of bytes is called a **lexeme**. A
 lexeme is the smallest unit of whatever language is being parsed other
-than the character.
+than the character. Lexemes contain characters, but do not contain other
+lexemes.
+
+A *token* is the intersection of a lexeme and the semantics of the
+language, and each lexeme is a member of exactly one token class.  As an
+example, let's consider the "less than or equal" operator in Python,
+`<=`. It is a lexeme, and although the `<` and the `=` are lexemes in
+other cases (*cf*. the less than and the assignment operator), they
+are just component characters here. As a token, `<=` is a "comparison
+operator token."
 
 The current position in the text is called the index. As lexemes are
 identified the index advances. In parsers like Parsec, the current
