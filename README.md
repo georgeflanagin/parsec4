@@ -322,7 +322,7 @@ Parser | Description | Success |  Returns | Index
 `eof` | tests for end of a string | index at or beyond the end of the string | boolean | always unchanged.
 `regex` | regular expression match of a string | matches the regex | first matched string | moved ahead by length of the matched string; unchanged on failure
 
-## What are the "combinator" parts of Parsec?
+### What are the "combinator" parts of Parsec?
 
 As a translation of the Parsec library in Haskell, and getting a breath
 of new-old life from operator overloading in C++, the combinator 
