@@ -1273,6 +1273,7 @@ def timestamp() -> datetime.datetime:
     """
     return lexeme(TIMESTAMP).parsecmap(datetime.datetime.fromisoformat)
 
+quote  = string(QUOTE2)
 
 def charseq() -> str:
     """
