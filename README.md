@@ -579,6 +579,41 @@ about the **fact** that it was found. We need do nothing else with it.
 
 ## Let's parse a little more ....
 
+Let's look back at our grammar we described as:
+
+```python
+language = show_command ^ help_command ^ status_command ^ exit
+```
+
+And some example commands on each being,
+
+```bash
+show gpus on billieholiday, milesdavis, coltrane
+help show
+status down hosts
+exit
+```
+
+Consider the show command first, and note that there are several different
+language elements (tokens) present. We have a "whitespace delimited" language,
+which defined more precisely means that whitespace characters are never a part of
+any lexeme. In the example, these are our lexemes and tokens:
+
+Lexeme | Token Type
+|---|---|
+show | keyword
+gpus | identifier
+on | keyword
+billieholiday | identifier
+, | delimeter
+milesdavis | identifier
+, | delimiter
+coltrane | identifier
+<CR> | eof
+
+
+
+
 
 #### ADD MORE DOCUMENTATION HERE.
 
