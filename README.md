@@ -579,37 +579,93 @@ about the **fact** that it was found. We need do nothing else with it.
 
 ## Let's parse a little more ....
 
-Let's look back at our grammar we described as:
+Suppose you were writing a program to convert `csh` to `bash`. You will find
+that shell and environment variables are introduced with 
 
-```python
-language = show_command ^ help_command ^ status_command ^ exit
+```csh
+set refextz = "${refext}.gz"
+set colon=":"
+
+setenv GAUSS_MDEF "$2"
 ```
 
-And some example commands on each being,
+The equivalent statements in `bash` are
 
 ```bash
-show gpus on billieholiday, milesdavis, coltrane
-help show
-status down hosts
-exit
+refextz="${refext}.gz"
+colon=":"
+
+export GAUSS_MDEF="$2"
 ```
 
-Consider the show command first, and note that there are several different
-language elements (tokens) present. We have a "whitespace delimited" language,
-which defined more precisely means that whitespace characters are never a part of
-any lexeme. In the example, these are our lexemes and tokens:
+`setenv` is easier, so let's start there. We probably need a parser for 
+identifiers --- tokens made of printable characters that will represent
+the names of objects in the program. Depending on the specifics of the
+language, this simple parser will do the job:
 
-Lexeme | Token Type
-|---|---|
-show | keyword
-gpus | identifier
-on | keyword
-billieholiday | identifier
-, | delimeter
-milesdavis | identifier
-, | delimiter
-coltrane | identifier
-<CR> | eof
+`identifier = lexeme(regex(r'[^\s]+'))`
+
+That's not very elegant, so perhaps something like this, instead:
+
+`identifier = lexeme(regex(r'[a-zA-Z][a-zA-Z0-9_]*'))`
+
+```python
+@generate
+def setenv():
+    yield lexeme(string('setenv'))
+    k = yield identifier
+    v = yield quoted ^ identifier
+    raise EndOfGenerator(f'export {k}="{v}"')
+```
+
+The first statement in `setenv()` will recognize the string literal 'setenv' and removes 
+the trailing space. We don't need to retrieve anything from the operation. The parser
+will terminate if the string is not found, and only if execution continues are we 
+in a setenv statement.
+
+The next statement retrieves the identifier -- in this case, the name of the environment
+variable. The next statement looks to see if the text is quoted and if it is not 
+assumes that the text is not quoted. 
+
+The value is communicated back to the calling parser with the `EndOfGenerator` 
+exception that contains a text shred in `bash` syntax that represents the same
+information.
+
+Simple `set` statements like the ones pictured could be handled similarly, but if the
+expression is something like the following, we are going to need another
+parser:
+
+`set path = (/usr/local/anaconda/anaconda3/bin $path)`
+
+The value, in this case will be something like:
+
+`v = quoted ^ parenthetical ^ identifier`
+
+Note that we need to check first to see if it is quoted so that we are able
+to understand expressions like this one, and correctly recognize the value
+as a string rather than the result of a concatenation expression.
+
+`set path = "(/usr/local/anaconda/anaconda3/bin $path)"`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
