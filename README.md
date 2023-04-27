@@ -669,7 +669,7 @@ Now, we can put together a parser for parenthetical expressions:
 @generate
 def parenthetical():
     yield lparen
-    elements = sepBy(quoted ^ shred, WHITESPACE)
+    elements = yield sepBy(quoted ^ shred, WHITESPACE)
     yield rparen
     raise EndOfGenerator("".join(elements))
 ```
