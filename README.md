@@ -605,9 +605,10 @@ language, this simple parser will do the job:
 
 `identifier = lexeme(regex(r'[^\s]+'))`
 
-That's not very elegant, so perhaps something like this, instead:
+That's not very elegant, so perhaps something like this (depending on
+specifics of the language) instead:
 
-`identifier = lexeme(regex(r'[a-zA-Z][a-zA-Z0-9_]*'))`
+`identifier = lexeme(regex(r'[$_a-zA-Z][a-zA-Z0-9_]*'))`
 
 ```python
 @generate
@@ -647,9 +648,35 @@ as a string rather than the result of a concatenation expression.
 
 `set path = "(/usr/local/anaconda/anaconda3/bin $path)"`
 
+How might we handle the parenthetical expression? We obviously need
+parsers for the delimiters:
 
+```python
+lparen = lexeme(string(LPAREN))
+rparen = lexeme(string(RPAREN))
+```
 
+The operation inside the parens is string concatentation, and the
+space in this case is a delimiter that we want to keep around. 
+Let's extract and reuse the regex from the identifier parser,
+and call it a shred:
 
+`shred = regex(r'[$_a-zA-Z][a-zA-Z0-9_]*')`
+
+Now, we can put together a parser for parenthetical expressions:
+
+```python
+@generate
+def parenthetical():
+    yield lparen
+    elements = sepBy(quoted ^ shred, WHITESPACE)
+    yield rparen
+    raise EndOfGenerator("".join(elements))
+```
+
+Note the nice way that the result of "combinating" the `quoted` and
+`shred` parsers allows us to create a new (nameless) parser that 
+is the argument to the `sepBy` parser. 
 
 
 
