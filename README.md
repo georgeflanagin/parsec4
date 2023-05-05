@@ -13,16 +13,32 @@ The `string` parser in Parsec 3.3 tried to match the first n characters
 of the text shred to the parser's datum. This leads to some unexpected
 behavior when there is a partial match of n characters where n is less
 than the length of either the text shred or the target.
+ 
+For example, suppose your string parser is looking for `bayesian` and 
+the input text is `bayside`. In Parsec 3.3, the return value indicates
+failure, but the index is advanced to the position after the `y`. Is this
+the desired behavior? Maybe, but most programmers will guess incorrectly
+that a failure does not consume the `bay` from the input.
 
-There are now two `string` parsers, one that follows Parsec 3.3 behavior,
-and one that does not advance the index at all in cases of a partial
-match. Users can select the legacy version by setting the environment
+There are now two `string` parsers, `parsec3_string` and
+`parsec4_string`. The first one follows Parsec 3.3 behavior. 
+The second one *does not* consume input in the case of a partial
+match. Either can be used directly with its name. The `string`
+parser can be associated with either one, and by default it is
+associated with `parsec4_string`.
+Users can select the Parsec 3.3 version by setting the environment
 variable `PARSEC3_STRING=1`.
 
 ### Renamed the "any" parser
 
 I changed name of the `any()` parser to `any_char()` to avoid conflicts with
-Python built-in of the same name. 
+Python built-in of the same name. If Parsec 3.3 is imported with 
+
+```python
+from parsec import *
+```
+
+the declaration/definition of `parsec.any` will hide the `any` builtin. 
 
 ## Updates to Parsec 3.3
 
@@ -31,12 +47,13 @@ Python built-in of the same name.
 
 - Provided more natural English grammar for He Tao's comments. His comments
   are often included *in situ*, with additional comments by me. New comments 
-  are marked with a preceding and following group
-  of three # characters, and the original docstrings use triple single quotes
+  are marked with a preceding and following group, `###`, 
+  and the original docstrings use triple single quotes
   rather than triple double quotes.
 
 - Revised for modern Python; no longer compatible with Python 2. This version 
-  requires Python 3.8
+  requires Python 3.8. Where practical, f-strings are used for formatting, and
+  the walrus operator (`:=`) makes an appearance here and there.
 
 - Inserted type hints.
 
@@ -45,7 +62,6 @@ Python built-in of the same name.
 - Changed some string searches to exploit constants in string module rather
   than str functions that might be affected by locale.
 
-- Where practical, f-strings are used for formatting.
 
 - An explicit `Value.__str__` is now provided so that the `Value` objects
   are more aesthetically pleasing when printed.
@@ -136,7 +152,6 @@ There are two completely new functions.
 
 ```python
 p = parser_from_strings("hello world")
-p = parser_from_strings(['hello', 'world'])
 ```
  
 produces:
@@ -145,16 +160,8 @@ produces:
 p = lexeme(string("hello")) ^ lexeme(string("world"))
 ```
 
-There is an option second argument that is a callable or the name of
-a callable that is to be applied to a successful parse. For (a not
-particularly useful) example,
-
-```python
-p = parser_from_strings("HELLO WORLD", 'str.lower')
-```
-
-A more useful argument is likely to be a `lambda` function that invokes
-a Python function in the code of your current project.
+Note that the result is a parser, `p`, that has been created by joining
+two parsers with the try-choice operator.
 
 ## Explanation of use.
 
@@ -165,20 +172,25 @@ difference between LL and LR.
 
 https://stackoverflow.com/questions/5975741/what-is-the-difference-between-ll-and-lr-parsing
 
-Along with writing rich parsers in Python, Parsec is useful for reading
-user input and ensuring correct syntax. A top-level parser for the
-allowable input may be built from the Parsec library, and the top level
-parser will return the usefully transformed input. For example, if the
-top level parser is named `p`, then
+Parsec is best used as a kit for constructing parsers of your own for 
+your purposes. It is a bit like the toys known as LEGOs: they are the 
+basic building blocks with a finite number of shapes, and from them
+you build toy houses. The toy house is analogous to the *top-level parser*,
+and the LEGO blocks are the *monads*.
+
+Each parser has a `.parse()` function, and since new parsers are constructed
+by combining the monadic parsers, your new parsers also have a `.parse()` 
+method. Let's say your top-level parser is named `p`, then to parse
+some text there will be a line somewhere in your program that looks like 
+this:
 
 ```python
-text = input('Type in some stuff:')
 results = p.parse(text)
 ```
 
-.. should return the objects retrieved from parsing `text`.  The simplest
-parser of all might be to read the user's text one word at a time. A
-parser that retrieves a word could be written like this:
+`p` should return the objects retrieved from parsing `text`.  The simplest
+parser of all might be to read text one word at a time. A
+parser that retrieves a whitespace delimited word could be written like this:
 
 ```python
 import parsec4

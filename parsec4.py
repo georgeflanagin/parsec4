@@ -1331,14 +1331,14 @@ def quoted() -> str:
     raise EndOfGenerator(''.join(body))
 
 
-def parser_from_strings(s:Union[str, Iterable], 
+def parser_from_strings(s:str, 
     cmap:Union[str, Callable]=None) -> Parser:
     """
     Factory for string parsers. NOTE that this function is not
         itself a Parser, but returns a Parser object joined 
         with the try-choice operator (^).
 
-    s -- an iterable of strings, or a whitespace delimited string of text.
+    s -- a whitespace delimited string of text.
     
     cmap -- an optional callable to be used as the argument to .parsecmap().
         If called with a str, the argument is accepted without comment or 
@@ -1357,7 +1357,10 @@ def parser_from_strings(s:Union[str, Iterable],
 
     NOTE: this factory will work with Parsec3 or Parsec4 strings.
     """
-    s = s.strip().split() if isinstance(s, str) else s
+
+    if not isinstance(s, str): 
+        raise ParserError(f"{s=} is not a str of whitespace delimited words.")
+
     if cmap is None:
         # print(" | ".join([ f"lexeme(string('{_}'))" for _ in s ]))
         return eval(" ^ ".join([ f"lexeme(string('{_}'))" for _ in s ]))
