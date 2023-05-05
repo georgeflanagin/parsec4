@@ -42,7 +42,10 @@ from   typing import *
 # Credits
 ###
 __author__ = 'George Flanagin'
-__credits__ = 'He Tao, sighingnow@gmail.com'
+__credits__ = """
+He Tao, sighingnow@gmail.com --- original version
+Alina Enikeeva, alina.enikeeva@richmond.edu --- documentation and testing
+"""
 __copyright__ = 'Copyright 2023'
 __version__ = 4.0
 __maintainer__ = "George Flanagin"
