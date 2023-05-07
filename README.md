@@ -270,17 +270,6 @@ C and C++, and brace-pairs, `{ }` in both C and Python.
 
 `statement` --- An expression combined with a terminating sequence point.
 
-### How does *any* parser work?
-
-A parser crawls along a string from the beginning to the end if all
-goes well, and stopping when it has an unrecoverable error if there
-are problems.  The string is often called the *text*. At some level
-deep enough inside the parser, it reads the text one byte at a time.
-I mention this because while a parser may be aware of the lines in a
-file containing the text, it does not proceed a line at a time like
-the Python function `f.readlines()`. To treat the lines as significant,
-you must parse the characters that represent the end-of-line.
-
 ### How does Parsec work?
 
 Parsec is not itself a parser for *any* language; it is a parser
