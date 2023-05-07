@@ -243,6 +243,12 @@ remains, whose significance has not yet been determined.
 meaning to the parser. It could be just one byte, like `=`, or it
 could be a `a_very_long_variable_name`.
 
+`monad` --- A parser for a lexeme. Each lexeme has a parser that produces
+it by a combination of operations that read the input and recognize the
+lexeme with the operations that produce the lexeme and make it available
+to the remainder of the parser's code. The two actions are said to be
+*bound* within the monad.
+
 `token` --- Tokens are the defining concept in parsers; quite literally
 a parser transforms a stream of text into a stream of tokens. A
 token is a collection of one or more lexemes that are adjacent in
@@ -273,9 +279,7 @@ C and C++, and brace-pairs, `{ }` in both C and Python.
 ### How does Parsec work?
 
 Parsec is not itself a parser for *any* language; it is a parser
-construction kit based on the idea of monads. An informal definition 
-of a monad is that it is a function, generally a short function, that 
-transforms its input in some way, returning the transformed object. 
+construction kit based on the idea of monads. 
 Each monad, whether it is
 one provided "in the can" by Parsec or something you write or create by
 combining Parsec's parts, should do this:
@@ -283,28 +287,28 @@ combining Parsec's parts, should do this:
 - Accept arguments that are a `str` that your monad examines, and an
 `int` that represents the offset into the `str` where your parse should
 begin. This argument defaults to zero, which makes it very convenient
-to write statements like `shred.parse('hello world')`
+to write statements like `p.parse('hello world')` instead of 
+`p.parse('hello world', 0).
 
 - Returns a `Value` object (defined in `parsec.py`) that is a named tuple:
 `(status:bool, index:int, found:object, expected:object)`
 
 Both Parsec 3 and Parsec 4 provide convenience factories for the concepts
 of success and failure of the parser. Success is `Value(True, index,
-found, None)` and failure is `Value(False, index, None, expected)`.
-
+found, None)` and failure is `Value(False, index, None, expected)`. 
 Other than `found` and `expected`, what do these terms mean and what
 values can you expect?
 
 - If the parsing operation is a success, the parser returns some
 partial string from the `str` that meets the criteria of the parser,
-and the index that is greater than or equal to where it was before the
+and the index will is greater than or equal to where it was before the
 parsing operation.
 
 - If the parsing operation fails, it returns what it was expecting,
 and the index is again, greater than or equal to the value when the
 parser began.
 
-The parser never "rewinds" the input, but it does not always advance
+In other words, the parser never "rewinds" the input, but it does not always advance
 the index.  If the parser does not advance the index, there could be a
 few reasons:
 
@@ -314,23 +318,24 @@ few reasons:
 
 ### How about a few more details?
 
-Let's revisit the `shred` parser.
+Let's revisit the `p` parser which only recognizes what most of 
+us call words. 
 
 ```python
->>> shred.parse('Your name')
+>>> p.parse('Your name')
 Your
 ```
 
-In this example, *"Your name"* is the text. It is nine characters, and
+In this example, *Your name* is the text. It is nine characters, and
 the index corresponds to the positions used by Python's slicing operator.
 Conceptually, `shred` applies the regex, and extracts "Your". The index is 
 now set to 4, and the remaining string is *" name"* (note the leading space).
 
-Assuming that `shred` is a component of some other parser, the 
-other parser will send `s[4:]` to the next parser to
+Assuming that `shred` is a component of some other parser, it 
+will send `s[4:]` to the next parser to
 invoke according to its rules. 
 
-### What is the Parser part of this code?
+### What is the Parser part of Parsec4's code?
 
 Parsec contains a class named ... `Parser`. This class has all the
 methods in it that support parsing. It also contains a method named
