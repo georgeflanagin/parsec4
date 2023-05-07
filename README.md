@@ -216,24 +216,59 @@ parser that merely gets the first word from a whitespace string.
 
 ### Terminology.
 
-As it proceeds, when the parser finds one or more consecutive bytes that it
-both recognizes and expects that block of bytes is called a **lexeme**. A
-lexeme is the smallest unit of whatever language is being parsed other
-than the character. Lexemes contain characters, but do not contain other
-lexemes.
+Parser terminology is unfamiliar to many, and even when some of the
+terms are known, it is not clear precisely what they mean. Below
+is a short list of definitions that are less rigorous than what you
+might find in a computer science text, but sufficiently exact to
+be useful.
 
-A *token* is the intersection of a lexeme and the semantics of the
-language, and each lexeme is a member of exactly one token class.  As an
-example, let's consider the "less than or equal" operator in Python,
-`<=`. It is a lexeme, and although the `<` and the `=` are lexemes in
-other cases (*cf*. the less than and the assignment operator), they
-are just component characters here. As a token, `<=` is a "comparison
-operator token."
+The order of these definitions is intended to reflect the order
+that the terms make sense, and all the examples that support the
+definitions come from the Python language.
 
-The current position in the text is called the index. As lexemes are
-identified the index advances. In parsers like Parsec, the current
-position is referred to as index zero. In other kinds of parsers, the
-absolute position might be used.
+`text` --- The input for the parser represented as a sequence of
+bytes. Whether the text is read from a file or typed in by a user
+is unimportant.
+
+`index` --- The index is nothing more than the current position of
+the "next" byte" in the text. Depending on the internal workings
+of the parser, the index might be the absolute offset from the
+beginning of the text, or it might be usually zero (0) with already
+parsed positions being negative. Parsec is of the latter type.
+
+`shred` --- A non-empty sequence within the text, possibly all that
+remains, whose significance has not yet been determined.
+
+`lexeme` --- The smallest collection of adjacent bytes that has a
+meaning to the parser. It could be just one byte, like `=`, or it
+could be a `a_very_long_variable_name`.
+
+`token` --- Tokens are the defining concept in parsers; quite literally
+a parser transforms a stream of text into a stream of tokens. A
+token is a collection of one or more lexemes that are adjacent in
+the text, combined with a unit of meaning in the language being
+parsed. The type of meaning defines a *class of tokens*, such as 
+operator, identifier, etc. 
+
+A token may have different meanings in different languages;
+the '<' represents "less than" in Python, but is the opening of a
+tag in HTML.
+
+They may also influence each other's meanings:
+
+- `<` a comparison operator token meaning "less than."
+- `=` an assignment operator token.
+- `<=` less than or equal to
+- `< =` a syntax error because an embedded space is not allowed.
+
+`expression` --- A group of adjacent tokens that can be combined
+and evaluated. A trivial but useful example is `2 + 3`.
+
+`sequence point` --- A token that forces the preceding expression
+to be evaluated. Examples are line breaks in Python, semicolons in
+C and C++, and brace-pairs, `{ }` in both C and Python. 
+
+`statement` --- An expression combined with a terminating sequence point.
 
 ### How does *any* parser work?
 
