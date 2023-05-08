@@ -189,59 +189,68 @@ results = p.parse(text)
 ```
 
 `p` should return the objects retrieved from parsing `text`.  The simplest
-parser of all might be to read text one word at a time. A
-parser that retrieves a whitespace delimited word could be written like this:
+parser of all might be to read text one word at a time, where word has the 
+conventional meaning in English. 
+
+The following code will import everything from the `parsec4` module. The usual
+advisories regarding importing contents of a module rather than the module itself
+apply.
 
 ```python
 import parsec4
-
-shred = parsec4.regex(r'[a-zA-Z]+')
+from   parsec4 import *
 ```
 
-Note that `shred` is *not* the word that is retrieved. Instead, `shred`
+A parser that retrieves a whitespace delimited word could be written
+like this:
+
+```python
+p = parsec4.regex(r'[a-zA-Z]+')
+```
+
+Note that `p` is *not* the word that is retrieved. Instead, `p`
 is a *parser* that retrieves a word based on the regular expression
 supplied to the function `parsec4.regex`.  Every parser has a `parse()`
-function, and calling `shred` with a piece of whitespace delimited text
+function, and calling `p` with a piece of whitespace delimited text
 returns the first word of the text.
 
 ```python
->>> shred.parse('Your name')
+>>> p.parse('Your name')
 Your
 ```
 
-Of course, `shred` is not a top-level parser; it is an almost atomic
-parser that merely gets the first word from a whitespace string.
+Of course, `shred` is not enough to parse an entire language; it is a bare
+minimum parser that merely gets the first word from a whitespace string.
 
 ## Tutorial
 
 ### Terminology.
 
 Parser terminology is unfamiliar to many, and even when some of the
-terms are known, it is not clear precisely what they mean. Below
-is a short list of definitions that are less rigorous than what you
-might find in a computer science text, but sufficiently exact to
-be useful.
+terms are known, it is not clear precisely what they mean. Below is a
+short list of definitions that are less rigorous than what you might
+find in a computer science text, but sufficiently exact to be useful.
 
-The order of these definitions is intended to reflect the order
-that the terms make sense, and all the examples that support the
-definitions come from the Python language.
+The order of these definitions is intended to reflect the order that the
+terms make sense, and all the examples that support the definitions come
+from the Python language.
 
 `text` --- The input for the parser represented as a sequence of
-bytes. Whether the text is read from a file or typed in by a user
-is unimportant.
+bytes. Whether the text is read from a file or typed in by a user is
+unimportant.
 
-`index` --- The index is nothing more than the current position of
-the "next" byte" in the text. Depending on the internal workings
-of the parser, the index might be the absolute offset from the
-beginning of the text, or it might be usually zero (0) with already
-parsed positions being negative. Parsec is of the latter type.
+`index` --- The index is nothing more than the current position of the
+"next" byte" in the text. Depending on the internal workings of the
+parser, the index might be the absolute offset from the beginning of
+the text, or it might be usually zero (0) with already parsed positions
+being negative. Parsec is of the latter type.
 
 `shred` --- A non-empty sequence within the text, possibly all that
 remains, whose significance has not yet been determined.
 
-`lexeme` --- The smallest collection of adjacent bytes that has a
-meaning to the parser. It could be just one byte, like `=`, or it
-could be a `a_very_long_variable_name`.
+`lexeme` --- The smallest collection of adjacent bytes that has a meaning
+to the parser. It could be just one byte, like `=`, or it could be a
+`a_very_long_variable_name`.
 
 `monad` --- A parser for a lexeme. Each lexeme has a parser that produces
 it by a combination of operations that read the input and recognize the
@@ -250,14 +259,13 @@ to the remainder of the parser's code. The two actions are said to be
 *bound* within the monad.
 
 `token` --- Tokens are the defining concept in parsers; quite literally
-a parser transforms a stream of text into a stream of tokens. A
-token is a collection of one or more lexemes that are adjacent in
-the text, combined with a unit of meaning in the language being
-parsed. The type of meaning defines a *class of tokens*, such as 
-operator, identifier, etc. 
+a parser transforms a stream of text into a stream of tokens. A token
+is a collection of one or more lexemes that are adjacent in the text,
+combined with a unit of meaning in the language being parsed. The type
+of meaning defines a *class of tokens*, such as operator, identifier, etc.
 
 A token may have different meanings in different languages;
-the '<' represents "less than" in Python, but is the opening of a
+the `<` represents "less than" in Python, but is the opening of a
 tag in HTML.
 
 They may also influence each other's meanings:
@@ -282,13 +290,13 @@ Parsec is not itself a parser for *any* language; it is a parser
 construction kit based on the idea of monads. 
 Each monad, whether it is
 one provided "in the can" by Parsec or something you write or create by
-combining Parsec's parts, should do this:
+combining Parsec's parts, should do these two actions:
 
-- Accept arguments that are a `str` that your monad examines, and an
+- Accept arguments that are a `str` that the monad examines, and an
 `int` that represents the offset into the `str` where your parse should
 begin. This argument defaults to zero, which makes it very convenient
-to write statements like `p.parse('hello world')` instead of 
-`p.parse('hello world', 0).
+to write statements like `p.parse("hello world")` instead of 
+`p.parse("hello world", 0)`.
 
 - Returns a `Value` object (defined in `parsec.py`) that is a named tuple:
 `(status:bool, index:int, found:object, expected:object)`
@@ -328,10 +336,10 @@ Your
 
 In this example, *Your name* is the text. It is nine characters, and
 the index corresponds to the positions used by Python's slicing operator.
-Conceptually, `shred` applies the regex, and extracts "Your". The index is 
+Conceptually, `p` applies the regex, and extracts "Your". The index is 
 now set to 4, and the remaining string is *" name"* (note the leading space).
 
-Assuming that `shred` is a component of some other parser, it 
+Assuming that `p` is a component of some other parser, it 
 will send `s[4:]` to the next parser to
 invoke according to its rules. 
 
@@ -340,15 +348,16 @@ invoke according to its rules.
 Parsec contains a class named ... `Parser`. This class has all the
 methods in it that support parsing. It also contains a method named
 `bind` that turns a functional operation into a parser by wrapping the
-function in Parser functionality. This is the monadic part of Parsec:
-transforming a function into a Parser object.
+function in Parser functionality. You do not need to call `bind` or
+any of the other functions in `Parser` if you use the `@Parser` class
+decorator. 
 
 Parsec also contains a function named `generate` that is used as a
 decorator in front of a function that does the parsing. The `@generate`
 decoration creates a Russian Doll structure of wrappings around the
-functions. While it is not "efficient" in the computational sense,
+functions. While it is not *efficient* in the computational sense,
 parsers of all kinds are generally executed only once to get the result,
-unlike a computation that might be executed millions of times in a data
+unlike a matrix inversion that might be executed millions of times in a data
 analysis program.
 
 ### What are some common built-in parsers in Parsec?
@@ -388,50 +397,6 @@ Operation | Meaning
 `f ^ g` | If `f` succeeds, return its success.  If `f` failed, execute `g` with the same index tried with `f`.
 `f + g` | If `f` succeeds, aggregate with the result of `g` as a tuple. If `f` fails, return its failure.
 `f / g` | If `f` succeeds and `g` fails, return the result of `f`. If `f` fails or `g` succeeds, then the index is unchanged. The idea is that "f is not followed by g."
-
-## An example
-
-At University of Richmond, we have many Linux workstations that are
-used in Academic Research Computing. To avoid continually logging in on
-one workstation after another to answer questions such as, "what kernel
-version is running?" or "what kinds of GPUs are installed?" we have a
-program that conducts a nightly inventory of the configurations. The
-results are kept in a database, and we have a small non-SQL program that
-allows users to ask these questions about any workstation at University
-of Richmond.
-
-We used the `cmd` module to construct the program, and we tried to make
-the query language English-like and at least a little flexible. Some
-workstations are named for well-known jazz musicians, and commands look
-like this:
-
-```python
-show gpus on dextergordon, billieholiday
-```
-
-`show` is a legitimate command to ask about things in the database,
-and the program supports others such as `help`, `status`, `exit`, and
-others. Another command might be:
-
-```python
-show latest kernel of billieholiday
-```
-
-In this skeletal, imperative grammar, the request consists of:
-
-- verb -- one of a small number of commands.
-- subject -- something you want to inquire about.
-- location -- a workstation or a list of workstations that you are inquiring about. 
-
-Of course, if the verb is `exit`, then the rest of those terms might well
-be irrelevant, and if `help` is the command, then there might be a topic
-(subject?) but location no longer makes sense.
-
-At the highest level we have:
-
-```python
-language = show_command ^ help_command ^ status_command ^ exit
-```
 
 ## The simplest case: parsing just one word.
 
@@ -513,15 +478,15 @@ exit = WHITESPACE >> parser_from_strings('exit EXIT quit QUIT') < eof()
 
 Assuming the user is typing in the commands, or that they are being
 read from a file, perhaps via I/O redirection, it is fair to ask this
-questions: "Why not take the user's input string, `s`, and place a line
+question: "Why not take the user's input string, `s`, and place a line
 of Python in the function that reads the input that says the following?"
 
 ```python
 s = s.strip().lower()
 ```
 
-This approach definitely works, and parsers of all types for all languages
-like well behaved data. Great idea. It is also a lot simpler than running
+This approach is best, and parsers of all types for all languages
+benefit from well behaved data. It is also a lot simpler than running
 the text through a number of parsers. And with a nod to the efficiency
 police, it is no doubt more efficient to use Python's built-ins than it
 is to use Parsec's functions.
@@ -535,12 +500,12 @@ the text literal "exit" or the text literal "quit") when what we want
 is exactly *one* result that represents the request to exit.
 
 The reason to have only one result may not be obvious, and I will explain
-it this way: We want our parser to make the decision that the user is
+it this way: We want our parser to recognize that the user is
 requesting to exit the program. The rest of our code should not care
 how the user provided this information to our program. It would
 be clumsy to execute the parsing code and then check again to see that
 the user typed either *exit* or *quit* when either is satisfactory. Why bother to
-parse the input if you still need to write the following?
+parse the input if you **still** need to write the following?
 
 ```python
 if user_command in ('quit', 'exit'): 
@@ -554,46 +519,26 @@ our parsing expression in Parsec's language as
 lexeme(string('exit')) ^ lexeme(string('quit')).result('exit')
 ```
 
-Parsec offers two transformation functions that are common and useful in a
-great many circumstances. The one shown above is `.result()`, a function
-that provides a result value for a parser that has succeeded. Whatever
+`.result()` is one of two functions that are useful for transforming
+the output of the parsing operation while it is happening. The `.result()`
+function provides a new value for a parser that has succeeded. Whatever
 the argument to `.result()` is, that becomes the result of the parsing
 operation.
 
 In fact, the value supplied for result can be anything you think is
 useful! If you were using a function lookup table, you might want to
-use something like
+use something like the following, supplying the Python built-in
+function that exits any program:
 
 ```python
 (lexeme(string('exit')) ^ lexeme(string('quit'))).result(sys.exit)
 ```
 
-OK, you *could* do this. A more usual approach inside a Python parsing program
-might be to define each of these results as a unique member of an 
-`enum.Enum` because the value of the result is unimportant --- our program
-only needs to recognize it. They are usually given names in all caps
-for historical reasons; assembly languages were developed before
-all computers even supported lower case letters, and it helps with
-recognition.
-
-```python
-(lexeme(string('exit')) ^ lexeme(string('quit'))).result(OpCode.EXIT)
-```
-
-
-
-The conventional term for this kind of symbolic
-result is an *opcode*, or if you are going down the route of full compilation,
-an instruction for the processor. The opcodes might be keys in a `dict`, and the values in
-this `dict` would be functions to be executed, perhaps `sys.exit` in this
-case.
-
-
-The other widely used transformation is `.parsecmap()`. Its argument
-is a function that is applied to the successful result of the parsing.
-Where `.result()` just provides a substitute value to be used explicity,
+The other widely used transformation is `.parsecmap()`. Whereas
+`.result()` supplies a replacement value, the argument to `.parsecmap()`
+is a function that is applied to the successful result of the parsing; that ism
 `.parsecmap()` *uses* the value of the parsing, and transforms it
-in someway.
+in some way.
 
 The use cases for `.parsecmap()` are different, and they fall into two
 groups:
@@ -601,7 +546,7 @@ groups:
 - the argument is another function that is a part of the current parser, or ...
 - the argument is a native function of Python such as `math.sqrt`. 
 
-Let's say you wanted to parse a sentence like "sqrt 3". You might go about
+Let's say you wanted to parse an expression like "sqrt 3". You can go about
 it this way:
 
 ```python
@@ -609,37 +554,43 @@ square_roots = lexeme(string('sqrt')) >> lexeme(ieee754).parsecmap(math.sqrt)
 ```
 
 The first part recognizes the word *sqrt*. We only advance in the
-`square_roots` parser if we find the text "sqrt". `lexeme` vacuums up
-trailing whitespace, and then `ieee754` looks for a number. If it finds
-one, it invokes `math.sqrt` on the number. It will blowup if the IEEE 
-number is negative, a problem that can be dealt with in a number of ways --- 
-perhaps using `cmath.sqrt` as the function.
+`square_roots` parser if we find the text "sqrt". `lexeme` vacuums up any
+trailing whitespace, and then `ieee754` looks for a number that meets
+the IEEE754 definition of the representation of a floating point value. 
 
-A key point is that we can discard the *sqrt* text because we only care
-about the **fact** that it was found. We need do nothing else with it.
+*NOTE: the `ieee754` parser is a new addition to Parsec 4.* 
+
+If `ieee754` finds a number, it invokes `math.sqrt` on the number. It
+will clearly fail if the IEEE number is negative, a problem that can be dealt with
+in a number of ways --- perhaps using `cmath.sqrt` as the function.
+
+A key point is that we can discard the "sqrt" text because we only care
+about the **fact** that it was found. It is of no use in deciding what to
+do next.
 
 ## Let's parse a little more ....
 
 Suppose you were writing a program to convert `csh` to `bash`. You will find
-that shell and environment variables are introduced with 
+that shell and environment variables are introduced with the following syntax
+in `csh`:
 
 ```csh
+setenv GAUSS_MDEF "$2"
+
 set refextz = "${refext}.gz"
 set colon=":"
-
-setenv GAUSS_MDEF "$2"
 ```
 
 The equivalent statements in `bash` are
 
 ```bash
+export GAUSS_MDEF="$2"
+
 refextz="${refext}.gz"
 colon=":"
-
-export GAUSS_MDEF="$2"
 ```
 
-`setenv` is easier, so let's start there. We probably need a parser for 
+`setenv` is easier, so let's start there. We need a general parser for 
 identifiers --- tokens made of printable characters that will represent
 the names of objects in the program. Depending on the specifics of the
 language, this simple parser will do the job:
@@ -651,39 +602,51 @@ specifics of the language) instead:
 
 `identifier = lexeme(regex(r'[$_a-zA-Z][a-zA-Z0-9_]*'))`
 
+A function to handle the `setenv` statement in `csh` will look like
+the code below, presented with line numbers to aid the discussion that
+follows:
+
 ```python
-@generate
-def setenv():
-    yield lexeme(string('setenv'))
-    k = yield identifier
-    v = yield quoted ^ identifier
-    raise EndOfGenerator(f'export {k}="{v}"')
+1. @generate
+2. def setenv():
+3.     yield lexeme(string('setenv'))
+4.     k = yield identifier
+5.     v = yield quoted ^ identifier
+6.     raise EndOfGenerator(f'export {k}="{v}"')
 ```
 
-The first statement in `setenv()` will recognize the string literal 'setenv' and removes 
-the trailing space. We don't need to retrieve anything from the operation. The parser
-will terminate if the string is not found, and only if execution continues are we 
-in a setenv statement.
+The decorator in line 1 transforms the ordinary Python function into a
+generator/parser. The operations inside `setenv()` are bound to a newly
+created parser of the same name.
 
-The next statement retrieves the identifier -- in this case, the name of the environment
-variable. The next statement looks to see if the text is quoted and if it is not 
-assumes that the text is not quoted. 
+Line 3 recognizes the string literal "setenv" and removes the trailing
+space. We don't need to retain anything from the operation because `bash`
+does not use the "setenv" text. The parser will terminate if the string
+is not found, and only continues execution in a setenv statement.
 
-The value is communicated back to the calling parser with the `EndOfGenerator` 
-exception that contains a text shred in `bash` syntax that represents the same
-information.
+Line 4 retrieves the identifier -- in this case, the name
+of the environment variable. 
 
-Simple `set` statements like the ones pictured could be handled similarly, but if the
-expression is something like the following, we are going to need another
-parser:
+Line 5 is more complex: it looks to see if the text
+is quoted, and if it is not assumes that the text is not quoted because
+it contains no whitespace characters. This is a good example of why the
+more complex representation must be searched for first.
+
+Line 6 communicates the outcome of our parsing operations back to the
+calling parser with the `EndOfGenerator` exception. It contains text
+in `bash` syntax that represents the same information.
+
+Simple `set` statements like the ones pictured could be handled similarly,
+but if the expression is something like the following, we are going to
+need another parser:
 
 `set path = (/usr/local/anaconda/anaconda3/bin $path)`
 
-The value, in this case will be something like:
+The value operation in line 5 will be something like:
 
 `v = quoted ^ parenthetical ^ identifier`
 
-Note that we need to check first to see if it is quoted so that we are able
+Note that we still need to check first to see if it is quoted so that we are able
 to understand expressions like this one, and correctly recognize the value
 as a string rather than the result of a concatenation expression.
 
@@ -700,9 +663,9 @@ rparen = lexeme(string(RPAREN))
 The operation inside the parens is string concatentation, and the
 space in this case is a delimiter that we want to keep around. 
 Let's extract and reuse the regex from the identifier parser,
-and call it a shred:
+and call it a blurb:
 
-`shred = regex(r'[$_a-zA-Z][a-zA-Z0-9_]*')`
+`blurb = regex(r'[$_a-zA-Z][a-zA-Z0-9_]*')`
 
 Now, we can put together a parser for parenthetical expressions:
 
@@ -710,34 +673,13 @@ Now, we can put together a parser for parenthetical expressions:
 @generate
 def parenthetical():
     yield lparen
-    elements = yield sepBy(quoted ^ shred, WHITESPACE)
+    elements = yield sepBy(quoted ^ blurb, WHITESPACE)
     yield rparen
-    raise EndOfGenerator("".join(elements))
+    raise EndOfGenerator(" ".join(elements))
 ```
 
 Note the nice way that the result of "combinating" the `quoted` and
-`shred` parsers allows us to create a new (nameless) parser that 
+`shred` parsers allows us to create a new (and nameless) parser that 
 is the argument to the `sepBy` parser. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#### ADD MORE DOCUMENTATION HERE.
 
