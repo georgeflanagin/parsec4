@@ -9,6 +9,8 @@ just getting started with parsing.
 
 ### Selectable string parsing
 
+*NOTE: This section will only make sense to users of Parsec 3.3*
+
 The `string` parser in Parsec 3.3 tried to match the first n characters
 of the text shred to the parser's datum. This leads to some unexpected
 behavior when there is a partial match of n characters where n is less
