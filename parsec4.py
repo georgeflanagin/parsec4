@@ -1103,7 +1103,7 @@ DIGIT_STR   = regex(r'(0|[1-9][\d]*)')
 digit_str   = lexeme(DIGIT_STR)
 
 # HEX numbers are allowed to start with zero.
-HEX_STR     = regex(r'[0-9a-fA-F]+')
+HEX_STR     = regex(r'0[xX][0-9a-fA-F]+')
 hex_str     = lexeme(HEX_STR)
 
 # Spec for how a floating point number is written.
@@ -1123,7 +1123,7 @@ TIME        = regex(r'(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)')
 time        = lexeme(TIME)
 
 # ISO Timestamp
-TIMESTAMP   = regex(r'[\d]{1,4}/[\d]{1,2}/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2}')
+TIMESTAMP   = regex(r'[\d]{1,4}\/[\d]{1,2}\/[\d]{1,2} [\d]{1,2}:[\d]{1,2}:[\d]{1,2}')
 timestamp   = lexeme(TIMESTAMP)
 
 # US 10 digit phone number, w/ or w/o dashes and spaces embedded.
