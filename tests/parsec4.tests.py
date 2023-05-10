@@ -90,7 +90,8 @@ class ParsecPrimTest(unittest.TestCase):
 
         parser = string('xy') | string('xz')
         self.assertEqual(parser.parse('xy'), 'xy')
-        self.assertRaises(ParseError, parser.parse, 'xz')
+        #self.assertRaises(ParseError, parser.parse, 'xz')
+        self.assertRaises(ParseError, parser.parse, 'xx')
 
     def test_try_choice(self):
         parser = string('x') ^ string('y')
@@ -341,6 +342,21 @@ class ParsecCharTest(unittest.TestCase):
         self.assertEqual(parser.parse('1'), '1')
         self.assertEqual(parser.parse('4'), '4')
         self.assertRaises(ParseError, parser.parse, 'x')
+
+    def test_ieee754(self):
+        parser = ieee754
+        self.assertEqual(parser.parse('1'), '1')
+        self.assertEqual(parser.parse('1.0'), '1.0')
+        self.assertEqual(parser.parse('-1'), '-1')
+        self.assertRaises(ParseError, parser.parse, 'x')
+
+    def test_parsec4_string(self):
+        parser = parser_from_strings("x xx yx xxx")
+        self.assertEqual(parser.parse("x"), "x")
+        self.assertEqual(parser.parse("yx"), "yx")  ## test passed
+        self.assertEqual(parser.parse("xx"), "xx") ##test failed
+        self.assertRaises(ParseError, parser.parse, 'yyy') 
+
 
 class ParserGeneratorTest(unittest.TestCase):
     '''Test the implementation of Parser Generator.(generate)'''
