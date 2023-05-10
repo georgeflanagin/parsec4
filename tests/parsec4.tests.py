@@ -13,20 +13,20 @@ from parsec4 import *
 
 class ParsecTest(unittest.TestCase):
     '''Test the implementation of Text.Parsec. (The final test for all apis)'''
-    def test_times_with_then(self):
+    def test_times_with_then(self) -> None:
         parser = times(letter(), 3) >> digit()
         self.assertEqual(parser.parse('xyz1'), '1')
         self.assertRaises(ParseError, parser.parse, 'xy1')
         self.assertRaises(ParseError, parser.parse, 'xyz')
         self.assertRaises(ParseError, parser.parse, 'xyzw')
 
-    def test_many_with_then(self):
+    def test_many_with_then(self) -> None:
         parser = many(string('x')) >> string('y')
         self.assertEqual(parser.parse('y'), 'y')
         self.assertEqual(parser.parse('xy'), 'y')
         self.assertEqual(parser.parse('xxxxxy'), 'y')
 
-    def test_times_with_min_and_max(self):
+    def test_times_with_min_and_max(self) -> None:
         parser = times(letter(), 2, 4)
         self.assertEqual(parser.parse('xy'), ['x', 'y'])
         self.assertEqual(parser.parse('xyz'), ['x', 'y', 'z'])
@@ -34,7 +34,7 @@ class ParsecTest(unittest.TestCase):
         self.assertEqual(parser.parse('xyzwv'), ['x', 'y', 'z', 'w'])
         self.assertRaises(ParseError, parser.parse, 'x')
 
-    def test_times_with_min_and_max_and_then(self):
+    def test_times_with_min_and_max_and_then(self) -> None:
         parser = times(letter(), 2, 4) >> digit()
         self.assertEqual(parser.parse('xy1'), '1')
         self.assertEqual(parser.parse('xyz1'), '1')
@@ -47,10 +47,10 @@ class ParsecTest(unittest.TestCase):
 class ParsecPrimTest(unittest.TestCase):
     '''Test the implementation of Text.Parsec.Prim.'''
 
-    def test_bind(self):
+    def test_bind(self)  -> None:
         nonlocals = {'piped': None}
 
-        def binder(x):
+        def binder(x)  -> str:
             nonlocals['piped'] = x
             return string('y')
 
@@ -59,13 +59,13 @@ class ParsecPrimTest(unittest.TestCase):
         self.assertEqual(nonlocals['piped'], 'x')
         self.assertRaises(ParseError, parser.parse, 'x')
 
-    def test_compose(self):
+    def test_compose(self) -> None:
         parser = string('x') >> string('y')
         self.assertEqual(parser.parse('xy'), 'y')
         self.assertRaises(ParseError, parser.parse, 'y')
         self.assertRaises(ParseError, parser.parse, 'z')
 
-    def test_joint(self):
+    def test_joint(self) -> None:
         parser = string('x') + string('y')
         self.assertEqual(parser.parse('xy'), ('x', 'y'))
         self.assertRaises(ParseError, parser.parse, 'y')
@@ -82,7 +82,7 @@ class ParsecPrimTest(unittest.TestCase):
         self.assertRaises(ParseError, parser.parse, '1')
         self.assertEqual(nonlocals['changed'], False)
 
-    def test_choice(self):
+    def test_choice(self) -> None:
         parser = string('x') | string('y')
         self.assertEqual(parser.parse('x'), 'x')
         self.assertEqual(parser.parse('y'), 'y')
@@ -92,7 +92,7 @@ class ParsecPrimTest(unittest.TestCase):
         self.assertEqual(parser.parse('xy'), 'xy')
         self.assertRaises(ParseError, parser.parse, 'xz')
 
-    def test_try_choice(self):
+    def test_try_choice(self) -> None:
         parser = string('x') ^ string('y')
         self.assertEqual(parser.parse('x'), 'x')
         self.assertEqual(parser.parse('y'), 'y')
@@ -102,12 +102,12 @@ class ParsecPrimTest(unittest.TestCase):
         self.assertEqual(parser.parse('xy'), 'xy')
         self.assertEqual(parser.parse('xz'), 'xz')
 
-    def test_ends_with(self):
+    def test_ends_with(self) -> None:
         parser = string('x') < string('y')
         self.assertEqual(parser.parse('xy'), 'x')
         self.assertRaises(ParseError, parser.parse, 'xx')
 
-    def test_parsecmap(self):
+    def test_parsecmap(self) -> None:
 
         def mapfn(p):
             return p + p
@@ -115,7 +115,7 @@ class ParsecPrimTest(unittest.TestCase):
         parser = string('x').parsecmap(mapfn)
         self.assertEqual(parser.parse('x'), 'xx')
 
-    def test_parsecapp(self):
+    def test_parsecapp(self) -> None:
 
         def genfn(p):
             return lambda c: 'fn:' + p + c + c
@@ -123,12 +123,12 @@ class ParsecPrimTest(unittest.TestCase):
         parser = string('x').parsecmap(genfn).parsecapp(string('y'))
         self.assertEqual(parser.parse('xy'), 'fn:xyy')
 
-    def test_desc(self):
+    def test_desc(self) -> None:
         parser = string('x')
         self.assertEqual(parser.parse('x'), 'x')
         self.assertRaises(ParseError, parser.parse, 'y')
 
-    def test_mark(self):
+    def test_mark(self) -> None:
         parser = many(mark(many(letter())) << string("\n"))
 
         lines = parser.parse("asdf\nqwer\n")
@@ -145,7 +145,7 @@ class ParsecPrimTest(unittest.TestCase):
         self.assertEqual(letters, ['q', 'w', 'e', 'r'])
         self.assertEqual(end, (1, 4))
 
-    def test_choice_with_compose(self):
+    def test_choice_with_compose(self) -> None:
         parser = (string('\\') >> string('y')) | string('z')
         self.assertEqual(parser.parse('\\y'), 'y')
         self.assertEqual(parser.parse('z'), 'z')
@@ -153,7 +153,7 @@ class ParsecPrimTest(unittest.TestCase):
 
 class ParsecCombinatorTest(unittest.TestCase):
     '''Test the implementation of Text.Parsec.Combinator.'''
-    def test_times(self):
+    def test_times(self) -> None:
         parser = times(string('x'), 2, 10)
         self.assertEqual(parser.parse('xxx'), ['x', 'x', 'x'])
         self.assertRaises(ParseError, parser.parse, 'x')
@@ -164,23 +164,23 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(parser.parse('x'), [])
         self.assertEqual(parser.parse('xxxxx'), [])
 
-    def test_count(self):
+    def test_count(self) -> None:
         parser = count(letter(), 3)
         self.assertEqual(parser.parse('xyz'), ['x', 'y', 'z'])
         self.assertEqual(parser.parse('xyzwwwww'), ['x', 'y', 'z'])
         self.assertRaises(ParseError, parser.parse, 'xy')
 
-    def test_optional(self):
+    def test_optional(self) -> None:
         parser = optional(string('xx'))
         self.assertEqual(parser.parse('xx'), 'xx')
         self.assertEqual(parser.parse('xy'), None)
 
-    def test_optional_default(self):
+    def test_optional_default(self) -> None:
         parser = optional(string('xx'), 'k')
         self.assertEqual(parser.parse('xx'), 'xx')
         self.assertEqual(parser.parse('xy'), 'k')
 
-    def test_many(self):
+    def test_many(self) -> None:
         parser = many(letter())
         self.assertEqual(parser.parse('x'), ['x'])
         self.assertEqual(parser.parse('xyz'), ['x', 'y', 'z'])
@@ -188,7 +188,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(parser.parse('1'), [])
 
     # from #28
-    def test_many_many(self):
+    def test_many_many(self) -> None:
         parser = many(many(space()))
         self.assertEqual(parser.parse('    '), [[' ', ' ', ' ', ' ']])
 
@@ -197,14 +197,14 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(parser.parse(' '), [[' '], [], [], []])
         self.assertEqual(parser.parse('  '), [[' ', ' '], [], [], []])
 
-    def test_many1(self):
+    def test_many1(self) -> None:
         parser = many1(letter())
         self.assertEqual(parser.parse('x'), ['x'])
         self.assertEqual(parser.parse('xyz'), ['x', 'y', 'z'])
         self.assertRaises(ParseError, parser.parse, '')
         self.assertRaises(ParseError, parser.parse, '1')
 
-    def test_separated(self):
+    def test_separated(self) -> None:
         parser = separated(string('x'), string(','), 2, 4)
         self.assertEqual(parser.parse('x,x,x') , ['x', 'x', 'x'])
         self.assertEqual(parser.parse('x,x,x,'), ['x', 'x', 'x'])
@@ -249,7 +249,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(r, ['a', 'a', 'a'])
         self.assertEqual(rest, ',')
 
-    def test_sepBy(self):
+    def test_sepBy(self) -> None:
         parser = sepBy(letter(), string(','))
         self.assertEqual(parser.parse_strict('x')     , ['x'])
         self.assertEqual(parser.parse       ('x,')    , ['x'])
@@ -259,7 +259,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(parser.parse       ('1'), [])  # nothing consumed
         self.assertEqual(parser.parse       ('1,'), []) # nothing consumed
 
-    def test_sepBy1(self):
+    def test_sepBy1(self) -> None:
         parser = sepBy1(letter(), string(','))
         self.assertEqual(parser.parse_strict('x')     , ['x'])
         self.assertEqual(parser.parse       ('x,')    , ['x'])
@@ -269,7 +269,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertRaises(ParseError, parser.parse, ('1'))
         self.assertRaises(ParseError, parser.parse, ('1,'))
 
-    def test_endBy(self):
+    def test_endBy(self) -> None:
         parser = endBy(letter(), string(','))
         self.assertEqual(parser.parse_strict('x,')    , ['x'])
         self.assertEqual(parser.parse_strict('x,y,z,'), ['x', 'y', 'z'])
@@ -279,7 +279,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(parser.parse       ('x')     , [])
         self.assertEqual(parser.parse       ('x,')    , ['x'])
 
-    def test_endBy1(self):
+    def test_endBy1(self) -> None:
         parser = endBy1(letter(), string(','))
         self.assertRaises(ParseError, parser.parse, ('x'))
         self.assertRaises(ParseError, parser.parse_strict, ('x,y,z'))
@@ -290,7 +290,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertRaises(ParseError, parser.parse, ('1'))
         self.assertRaises(ParseError, parser.parse, ('1,'))
 
-    def test_sepEndBy(self):
+    def test_sepEndBy(self) -> None:
         parser = sepEndBy(letter(), string(','))
         self.assertEqual(parser.parse_strict('x')     , ['x'])
         self.assertEqual(parser.parse_strict('x,')    , ['x'])
@@ -300,7 +300,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(parser.parse       ('1')     , [])
         self.assertEqual(parser.parse       ('1,')    , [])
 
-    def test_sepEndBy1(self):
+    def test_sepEndBy1(self) -> None:
         parser = sepEndBy1(letter(), string(','))
         self.assertEqual(parser.parse_strict('x')     , ['x'])
         self.assertEqual(parser.parse_strict('x,')    , ['x'])
@@ -310,7 +310,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertRaises(ParseError, parser.parse, ('1'))
         self.assertRaises(ParseError, parser.parse, ('1,'))
 
-    def test_excepts(self):
+    def test_excepts(self) -> None:
         parser = (string('<') / string('=')) ^ string('<=')
         self.assertEqual(parser.parse('<'), "<")
         self.assertEqual(parser.parse('<='), "<=")
@@ -319,7 +319,7 @@ class ParsecCombinatorTest(unittest.TestCase):
         self.assertEqual(parser.parse('<'), "<")
         self.assertEqual(parser.parse('<='), "<")
 
-    def test_fix(self):
+    def test_fix(self) -> None:
         @Parser
         @fix
         def bracketed_expr(recur):
@@ -331,12 +331,12 @@ class ParsecCombinatorTest(unittest.TestCase):
 class ParsecCharTest(unittest.TestCase):
     '''Test the implementation of Text.Parsec.Char.'''
 
-    def test_string(self):
+    def test_string(self) -> None:
         parser = string('x')
         self.assertEqual(parser.parse('x'), 'x')
         self.assertRaises(ParseError, parser.parse, 'y')
 
-    def test_regex(self):
+    def test_regex(self) -> None:
         parser = regex(r'[0-9]')
         self.assertEqual(parser.parse('1'), '1')
         self.assertEqual(parser.parse('4'), '4')
@@ -344,7 +344,7 @@ class ParsecCharTest(unittest.TestCase):
 
 class ParserGeneratorTest(unittest.TestCase):
     '''Test the implementation of Parser Generator.(generate)'''
-    def test_generate_desc(self):
+    def test_generate_desc(self) -> None:
         description = 'expected description for fn'
 
         @generate(description)
@@ -359,7 +359,7 @@ class ParserGeneratorTest(unittest.TestCase):
         self.assertEqual(ex.text, 'x')
         self.assertEqual(ex.index, 0)
 
-    def test_generate_backtracking(self):
+    def test_generate_backtracking(self) -> None:
         @generate
         def xy():
             yield string('x')
@@ -369,7 +369,7 @@ class ParserGeneratorTest(unittest.TestCase):
         # should not finish executing xy()
         self.assertEqual(parser.parse('z'), 'z')
 
-    def test_generate_raise(self):
+    def test_generate_raise(self) -> None:
 
         # `return` with argument inside generator is not supported in Python 2.
         # Instead, we can raise a `StopIteration` directly with the intended
