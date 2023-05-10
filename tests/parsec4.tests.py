@@ -90,7 +90,10 @@ class ParsecPrimTest(unittest.TestCase):
 
         parser = string('xy') | string('xz')
         self.assertEqual(parser.parse('xy'), 'xy')
-        #self.assertRaises(ParseError, parser.parse, 'xz')
+        if os.getenv('PARSEC3_STRING') == 1:
+            self.assertRaises(ParseError, parser.parse, 'xz')
+        else:
+            self.assertEqual(parser.parse('xz'), 'xz')
         self.assertRaises(ParseError, parser.parse, 'xx')
 
     def test_try_choice(self):
