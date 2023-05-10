@@ -360,6 +360,12 @@ class ParsecCharTest(unittest.TestCase):
         self.assertEqual(parser.parse("xx"), "xx") ##test failed
         self.assertRaises(ParseError, parser.parse, 'yy') 
 
+    def test_sting_strict(self) -> None:
+        parser = parser_from_strings("x xx xxx xy")
+        self.assertEqual(parser.parse_strict("x"), "x")
+        self.assertEqual(parser.parse_strict("xx"), "xx")
+        self.assertEqual(parser.parse_strict("xxx"), "xxx")
+        
 
 class ParserGeneratorTest(unittest.TestCase):
     '''Test the implementation of Parser Generator.(generate)'''
