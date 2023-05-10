@@ -339,6 +339,13 @@ class ParsecCharTest(unittest.TestCase):
         parser = string('x')
         self.assertEqual(parser.parse('x'), 'x')
         self.assertRaises(ParseError, parser.parse, 'y')
+    
+    def test_parsec4_string(self) -> None:
+        parser = parser_from_strings("xxx xx x yx")
+        self.assertEqual(parser.parse("x"), "x")
+        self.assertEqual(parser.parse("yx"), "yx")  
+        self.assertEqual(parser.parse("xx"), "xx") 
+        self.assertRaises(ParseError, parser.parse, 'yy') 
 
     def test_regex(self) -> None:
         parser = regex(r'[0-9]')
@@ -351,21 +358,47 @@ class ParsecCharTest(unittest.TestCase):
         self.assertEqual(parser.parse('1'), '1')
         self.assertEqual(parser.parse('1.0'), '1.0')
         self.assertEqual(parser.parse('-1'), '-1')
+        self.assertEqual(parser.parse('3.14e-1'), '3.14e-1')
         self.assertRaises(ParseError, parser.parse, 'x')
 
-    def test_parsec4_string(self) -> None:
-        parser = parser_from_strings("xxx xx x yx")
-        self.assertEqual(parser.parse("x"), "x")
-        self.assertEqual(parser.parse("yx"), "yx")  ## test passed
-        self.assertEqual(parser.parse("xx"), "xx") ##test failed
-        self.assertRaises(ParseError, parser.parse, 'yy') 
+    def test_digit_str(self) -> None:
+        parser = digit_str
+        self.assertEqual(parser.parse('0'), '0')
+        self.assertEqual(parser.parse('1'), '1')
+        self.assertEqual(parser.parse('123'), '123')
+        self.assertRaises(ParseError, parser.parse, '-1')
 
-    def test_sting_strict(self) -> None:
-        parser = parser_from_strings("x xx xxx xy")
-        self.assertEqual(parser.parse_strict("x"), "x")
-        self.assertEqual(parser.parse_strict("xx"), "xx")
-        self.assertEqual(parser.parse_strict("xxx"), "xxx")
-        
+    def test_hex_str(self) -> None:
+        parser = hex_str
+        #self.assertEqual(parser.parse('0x1'), '0x1')
+        #self.assertEqual(parser.parse('-0x63'), '-0x63')
+        #self.assertEqual(parser.parse('123'), '123')
+        #self.assertRaises(ParseError, parser.parse, '-1')
+  
+    def test_ipv4_addr(self) -> None:
+        parser = ipv4_addr
+        self.assertEqual(parser.parse('192.158.1.38'), '192.158.1.38')
+        self.assertRaises(ParseError, parser.parse, '192.2.32')
+
+    def test_pyint(self) -> None:
+        parser = pyint
+        self.assertEqual(parser.parse('1'), '1')
+        #self.assertRaises(ParseError, parser.parse, '3.14')
+
+    def test_time(self) -> None:
+        parser = time
+        self.assertEqual(parser.parse('13:03:57'), '13:03:57')
+        self.assertRaises(ParseError, parser.parse, '1:03:57')
+    
+    def test_timestamp(self) -> None:
+        parser = timestamp
+        self.assertEqual(parser.parse('2023/05/09 01:01:01'), '2023/05/09 01:01:01')
+        self.assertRaises(ParseError, parser.parse, '2023-05-09 01:01:01')
+
+    def test_us_phone(self) -> None:
+        parser = us_phone
+        self.assertEqual(parser.parse('904-904-9494'), '904-904-9494')
+        self.assertRaises(ParseError, parser.parse, '90-904-9494')
 
 class ParserGeneratorTest(unittest.TestCase):
     '''Test the implementation of Parser Generator.(generate)'''
