@@ -167,7 +167,7 @@ two parsers with the try-choice operator.
 
 ## Explanation of use.
 
-First, monadic parsers represent a type of construction mechanism rather
+Note, monadic parsers represent a type of construction mechanism rather
 than a type of underlying grammar. Thus a monadic parser could be used
 for either LL or LR grammars. This stackoverflow article explains the
 difference between LL and LR.
@@ -242,10 +242,8 @@ bytes. Whether the text is read from a file or typed in by a user is
 unimportant.
 
 `index` --- The index is nothing more than the current position of the
-"next" byte" in the text. Depending on the internal workings of the
-parser, the index might be the absolute offset from the beginning of
-the text, or it might be usually zero (0) with already parsed positions
-being negative. Parsec is of the latter type.
+"next" byte in the text. In Parsec, the initial index is usually zero (0). 
+The bytes that are already parsed have negative index. 
 
 `shred` --- A non-empty sequence within the text, possibly all that
 remains, whose significance has not yet been determined.
@@ -289,7 +287,7 @@ C and C++, and brace-pairs, `{ }` in both C and Python.
 ### How does Parsec work?
 
 Parsec is not itself a parser for *any* language; it is a parser
-construction kit based on the idea of monads. 
+construction kit, which is based on the idea of monads. 
 Each monad, whether it is
 one provided "in the can" by Parsec or something you write or create by
 combining Parsec's parts, should do these two actions:
@@ -311,7 +309,7 @@ values can you expect?
 
 - If the parsing operation is a success, the parser returns some
 partial string from the `str` that meets the criteria of the parser,
-and the index will is greater than or equal to where it was before the
+and the index will be greater than or equal to where it was before the
 parsing operation.
 
 - If the parsing operation fails, it returns what it was expecting,
@@ -342,7 +340,7 @@ Conceptually, `p` applies the regex, and extracts "Your". The index is
 now set to 4, and the remaining string is *" name"* (note the leading space).
 
 Assuming that `p` is a component of some other parser, it 
-will send `s[4:]` to the next parser to
+will send `text[4:]` to the next parser to
 invoke according to its rules. 
 
 ### What is the Parser part of Parsec4's code?
@@ -371,7 +369,7 @@ circumstances the parser advances the index ("consumes input").
 
 Parser | Description | Success |  Returns | Index 
 |---|---|---|---|---|
-`eof` | tests for end of a string | index at or beyond the end of the string | boolean | always unchanged.
+`eof` | tests for end of a string | index at or beyond the end of the string | boolean | always unchanged
 `regex` | regular expression match of a string | matches the regex | first matched string | moved ahead by length of the matched string; unchanged on failure
 
 ### What are the "combinator" parts of Parsec?
@@ -420,7 +418,7 @@ a parser that expects to find the end of the string.
 The most common question I have been asked is "How does `exit` parse
 *anything*??" The answer is that it inherits the `.parse()` method
 because `string` and `eof` are constructed by the `@generate` decorator
-that wraps the operations in the `Parser` class. The `<` operator Takes
+that wraps the operations in the `Parser` class. The `<` operator takes
 a parser on both the LHS and RHS and returns a parser that also has a
 `.parse()` method.
 
@@ -538,7 +536,7 @@ function that exits any program:
 
 The other widely used transformation is `.parsecmap()`. Whereas
 `.result()` supplies a replacement value, the argument to `.parsecmap()`
-is a function that is applied to the successful result of the parsing; that ism
+is a function that is applied to the successful result of the parsing; that is
 `.parsecmap()` *uses* the value of the parsing, and transforms it
 in some way.
 
