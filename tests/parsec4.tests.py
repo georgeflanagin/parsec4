@@ -383,7 +383,7 @@ class ParsecCharTest(unittest.TestCase):
     def test_pyint(self) -> None:
         parser = pyint
         self.assertEqual(parser.parse('1'), '1')
-        #self.assertRaises(ParseError, parser.parse, '3.14')
+        self.assertRaises(ParseError, parser.parse, '3.14')
 
     def test_time(self) -> None:
         parser = time
