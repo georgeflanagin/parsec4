@@ -34,13 +34,14 @@ variable `PARSEC3_STRING=1`.
 ### Renamed the "any" parser
 
 I changed name of the `any()` parser to `any_char()` to avoid conflicts with
-Python built-in of the same name. If Parsec 3.3 is imported with 
+Python built-in of the same name. When Parsec 3.3 was imported with 
 
 ```python
 from parsec import *
 ```
 
-the declaration/definition of `parsec.any` will hide the `any` builtin. 
+the declaration/definition of `parsec.any` would hide the `any` builtin.
+In Parsec 4, the parser has been renamed `any_char`. 
 
 ## Updates to Parsec 3.3
 
@@ -167,13 +168,6 @@ two parsers with the try-choice operator.
 
 ## Explanation of use.
 
-Note, monadic parsers represent a type of construction mechanism rather
-than a type of underlying grammar. Thus a monadic parser could be used
-for either LL or LR grammars. This stackoverflow article explains the
-difference between LL and LR.
-
-https://stackoverflow.com/questions/5975741/what-is-the-difference-between-ll-and-lr-parsing
-
 Parsec is best used as a kit for constructing parsers of your own for 
 your purposes. It is a bit like the toys known as LEGOs: they are the 
 basic building blocks with a finite number of shapes, and from them
@@ -221,7 +215,7 @@ returns the first word of the text.
 Your
 ```
 
-Of course, `shred` is not enough to parse an entire language; it is a bare
+Of course, `p` is not enough to parse an entire language; it is a bare
 minimum parser that merely gets the first word from a whitespace string.
 
 ## Tutorial
@@ -243,19 +237,18 @@ unimportant.
 
 `index` --- The index is nothing more than the current position of the
 "next" byte in the text. In Parsec, the initial index is usually zero (0). 
-The bytes that are already parsed have negative index. 
+The bytes that are already parsed are inaccessible. 
 
 `shred` --- A non-empty sequence within the text, possibly all that
-remains, whose significance has not yet been determined.
+remains, and that has not yet been parsed.
 
 `lexeme` --- The smallest collection of adjacent bytes that has a meaning
 to the parser. It could be just one byte, like `=`, or it could be a
 `a_very_long_variable_name`.
 
 `monad` --- A parser for a lexeme. Each lexeme has a parser that produces
-it by a combination of operations that read the input and recognize the
-lexeme with the operations that produce the lexeme and make it available
-to the remainder of the parser's code. The two actions are said to be
+it by a combination of [1] operations that read the input and [2] produce the lexeme.
+The two actions are said to be
 *bound* within the monad.
 
 `token` --- Tokens are the defining concept in parsers; quite literally
@@ -280,7 +273,7 @@ and evaluated. A trivial but useful example is `2 + 3`.
 
 `sequence point` --- A token that forces the preceding expression
 to be evaluated. Examples are line breaks in Python, semicolons in
-C and C++, and brace-pairs, `{ }` in both C and Python. 
+C and C++, and parentheses in almost all languages. 
 
 `statement` --- An expression combined with a terminating sequence point.
 
@@ -289,7 +282,7 @@ C and C++, and brace-pairs, `{ }` in both C and Python.
 Parsec is not itself a parser for *any* language; it is a parser
 construction kit, which is based on the idea of monads. 
 Each monad, whether it is
-one provided "in the can" by Parsec or something you write or create by
+one provided within Parsec or something you write or create by
 combining Parsec's parts, should do these two actions:
 
 - Accept arguments that are a `str` that the monad examines, and an
@@ -312,8 +305,8 @@ partial string from the `str` that meets the criteria of the parser,
 and the index will be greater than or equal to where it was before the
 parsing operation.
 
-- If the parsing operation fails, it returns what it was expecting,
-and the index is again, greater than or equal to the value when the
+- If the parsing operation fails, it returns what it was looking for,
+and the index is (again) greater than or equal to the value when the
 parser began.
 
 In other words, the parser never "rewinds" the input, but it does not always advance
@@ -355,10 +348,7 @@ decorator.
 Parsec also contains a function named `generate` that is used as a
 decorator in front of a function that does the parsing. The `@generate`
 decoration creates a Russian Doll structure of wrappings around the
-functions. While it is not *efficient* in the computational sense,
-parsers of all kinds are generally executed only once to get the result,
-unlike a matrix inversion that might be executed millions of times in a data
-analysis program.
+functions. 
 
 ### What are some common built-in parsers in Parsec?
 
@@ -504,8 +494,10 @@ it this way: We want our parser to recognize that the user is
 requesting to exit the program. The rest of our code should not care
 how the user provided this information to our program. It would
 be clumsy to execute the parsing code and then check again to see that
-the user typed either *exit* or *quit* when either is satisfactory. Why bother to
-parse the input if you **still** need to write the following?
+the user typed either *exit* or *quit* when either is satisfactory. 
+If we create a single parser for the exiting-event, we can avoid 
+writing the following code --- code that essentially duplicates our
+parsing effort. 
 
 ```python
 if user_command in ('quit', 'exit'): 
