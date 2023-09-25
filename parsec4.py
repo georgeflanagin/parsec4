@@ -1334,6 +1334,13 @@ def quoted() -> str:
     raise EndOfGenerator(''.join(body))
 
 
+@lexeme
+@generate
+def everything_else() -> str:
+    body = yield many(charseq())
+    raise EndOfGenerator(''.join(body))
+
+
 def parser_from_strings(s:str, 
     cmap:Union[str, Callable]=None) -> Parser:
     """
